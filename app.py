@@ -348,4 +348,3 @@ if st.session_state.get("invoice_paid") and st.session_state.cart:
         use_container_width=True
     )
 
-```
