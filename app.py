@@ -111,5 +111,105 @@ TOPPING_OPTIONS = {
     "🧀 Kem Cheese Macchiato đặc biệt": 10000
 }
 
-SUGAR_LEVELS = ["100% (Chuẩn vị ngọt thanh)", "70% (Nên thử - Vừa ngọt)", "50% (Ít ngọt)", "30% (Thanh nhẹ)", "0% (Không đường)"]
-ICE_LEVELS = ["100% (Đầy đủ đá)", "70% (Vừa đá)", "50% (Ít đá)", "30% (Sương sương)", "0
+SUGAR_LEVELS = [
+    "100% (Chuẩn vị ngọt thanh)",
+    "70% (Nên thử - Vừa ngọt)",
+    "50% (Ít ngọt)",
+    "30% (Thanh nhẹ)",
+    "0% (Không đường)"
+]
+
+ICE_LEVELS = [
+    "100% (Đầy đủ đá)",
+    "70% (Vừa đá)",
+    "50% (Ít đá)",
+    "30% (Sương sương)",
+    "0% (Không đá)"
+]
+
+VOUCHER_CODES = {
+    "THUDUC20": 20,
+    "MAMALALA50": 50,
+    "XINCHAO": 10
+}
+
+# Khởi tạo Session State
+if "cart" not in st.session_state:
+    st.session_state.cart = []
+if "invoice_paid" not in st.session_state:
+    st.session_state.invoice_paid = False
+if "minigame_discount" not in st.session_state:
+    st.session_state.minigame_discount = 0
+if "promo_discount" not in st.session_state:
+    st.session_state.promo_discount = 0
+
+# ---------------------------------------------------------
+# 3. SIDEBAR: TƯƠNG TÁC & MINIGAME & ĐỊA CHỈ
+# ---------------------------------------------------------
+with st.sidebar:
+    st.image("https://img.icons8.com/emoji/96/bubble-tea.png", width=70)
+    st.title("🏡 MAMALALA Store")
+    st.info("📍 **Địa chỉ:** 32 Võ Văn Hát, P. Long Trường, TP. Thủ Đức")
+    st.text("⏰ Giờ mở cửa: 08:00 - 22:30")
+    st.text("🛵 Ship nhanh Thủ Đức & lân cận")
+    
+    st.markdown("---")
+    st.header("🎰 Vòng Quay May Mắn")
+    if st.button("🎡 QUAY VOUCHER NGAY", use_container_width=True):
+        prizes = [0, 5, 10, 15, 20, 50]
+        weights = [20, 30, 25, 15, 8, 2]
+        won = random.choices(prizes, weights=weights)[0]
+        st.session_state.minigame_discount = won
+        if won > 0:
+            st.balloons()
+            st.success(f"🎉 Trúng ngay Voucher **{won}%**!")
+        else:
+            st.info("😅 Chúc bạn may mắn lượt sau!")
+            
+    if st.session_state.minigame_discount > 0:
+        st.caption(f"🎁 Voucher Minigame: **-{st.session_state.minigame_discount}%**")
+
+    st.markdown("---")
+    st.header("🎟️ Nhập Mã Giảm Giá")
+    code_input = st.text_input("Mã khuyến mãi:", placeholder="Ví dụ: THUDUC20").strip().upper()
+    if st.button("Áp dụng mã"):
+        if code_input in VOUCHER_CODES:
+            st.session_state.promo_discount = VOUCHER_CODES[code_input]
+            st.success(f"Đã áp dụng mã {code_input}: Giảm {VOUCHER_CODES[code_input]}%")
+        else:
+            st.error("Mã không hợp lệ! Gợi ý: THUDUC20, MAMALALA50")
+
+# ---------------------------------------------------------
+# 4. TÁCH TABS CHỨC NĂNG SÁNG TẠO
+# ---------------------------------------------------------
+tab_order, tab_fortune, tab_cart, tab_feedback = st.tabs([
+    "🍹 Đặt Đồ Uống", 
+    "🔮 Quẻ Bói Đồ Uống", 
+    "🛒 Giỏ Hàng & Thanh Toán",
+    "⭐ Đánh Giá & Góp Ý"
+])
+
+# ==================== TAB 1: ĐẶT ĐỒ UỐNG ====================
+with tab_order:
+    col_left, col_right = st.columns([1.2, 0.8])
+    
+    with col_left:
+        st.subheader("📝 Chọn Món & Tùy Chỉnh Chi Tiết")
+        
+        search_kw = st.text_input("🔍 Tìm kiếm đồ uống siêu tốc:", placeholder="Nhập tên món (Dâu, Matcha, Trà sữa...)")
+        category_name = st.selectbox("📂 Chọn nhóm đồ uống:", list(MENU_CATEGORIES.keys()))
+        current_menu = MENU_CATEGORIES[category_name]
+        
+        if search_kw:
+            filtered_menu = {k: v for k, v in current_menu.items() if search_kw.lower() in k.lower()}
+        else:
+            filtered_menu = current_menu
+            
+        if not filtered_menu:
+            st.warning("Không tìm thấy món phù hợp. Bạn thử tìm từ khóa khác xem sao nhé!")
+        else:
+            selected_tea = st.selectbox("☕ Chọn món uống:", list(filtered_menu.keys()))
+            tea_info = filtered_menu[selected_tea]
+            
+            st.markdown(f"""
+            <div class='product-card
