@@ -14,61 +14,19 @@ st.set_page_config(
 )
 
 # Custom CSS giao diện Pastel & hiệu ứng cao cấp
-st.markdown("""
-<style>
-    @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&display=swap');
-    
-    html, body, [class*="css"] {
-        font-family: 'Quicksand', sans-serif;
-    }
-    
-    .main-header {
-        background: linear-gradient(135deg, #FF9A9E 0%, #FECFEF 99%, #FECFEF 100%);
-        padding: 20px;
-        border-radius: 20px;
-        color: #D81B60;
-        text-align: center;
-        font-weight: 800;
-        box-shadow: 0 4px 15px rgba(255, 154, 158, 0.4);
-        margin-bottom: 10px;
-    }
-    .sub-header {
-        text-align: center;
-        color: #666;
-        font-weight: 600;
-        margin-bottom: 25px;
-    }
-    .product-card {
-        background: #FFFFFF;
-        border-radius: 16px;
-        padding: 18px;
-        border: 2px solid #FFE4E8;
-        box-shadow: 0 6px 12px rgba(255, 182, 193, 0.2);
-        margin-bottom: 15px;
-        transition: all 0.3s ease;
-    }
-    .fortune-box {
-        background: linear-gradient(135deg, #a8edda 0%, #fed6e3 100%);
-        border-radius: 15px;
-        padding: 20px;
-        text-align: center;
-        font-weight: bold;
-        color: #333;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    }
-    .stButton>button {
-        border-radius: 12px;
-        font-weight: 700;
-        background-color: #FF6B81;
-        color: white;
-        border: none;
-    }
-    .stButton>button:hover {
-        background-color: #FF4757;
-        color: white;
-    }
-</style>
-""", unsafe_allow_html=True)
+st.markdown(
+    "<style>"
+    "@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&display=swap'); "
+    "html, body, [class*='css'] { font-family: 'Quicksand', sans-serif; } "
+    ".main-header { background: linear-gradient(135deg, #FF9A9E 0%, #FECFEF 100%); padding: 20px; border-radius: 20px; color: #D81B60; text-align: center; font-weight: 800; box-shadow: 0 4px 15px rgba(255, 154, 158, 0.4); margin-bottom: 10px; } "
+    ".sub-header { text-align: center; color: #666; font-weight: 600; margin-bottom: 25px; } "
+    ".product-card { background: #FFFFFF; border-radius: 16px; padding: 18px; border: 2px solid #FFE4E8; box-shadow: 0 6px 12px rgba(255, 182, 193, 0.2); margin-bottom: 15px; } "
+    ".fortune-box { background: linear-gradient(135deg, #a8edda 0%, #fed6e3 100%); border-radius: 15px; padding: 20px; text-align: center; font-weight: bold; color: #333; box-shadow: 0 4px 10px rgba(0,0,0,0.1); } "
+    ".stButton>button { border-radius: 12px; font-weight: 700; background-color: #FF6B81; color: white; border: none; } "
+    ".stButton>button:hover { background-color: #FF4757; color: white; } "
+    "</style>",
+    unsafe_allow_html=True
+)
 
 # Hiển thị banner ảnh (Tên file: IMG_4632.jpeg)
 try:
@@ -211,5 +169,8 @@ with tab_order:
             selected_tea = st.selectbox("☕ Chọn món uống:", list(filtered_menu.keys()))
             tea_info = filtered_menu[selected_tea]
             
-            st.markdown(f"""
-            <div class='product-card
+            st.markdown(
+                f"<div class='product-card'>"
+                f"<h3 style='color:#D81B60; margin:0;'>{selected_tea} <span style='font-size:0.8rem; background:#FFD1DC; color:#D81B60; padding:3px 8px; border-radius:10px;'>{tea_info['tag']}</span></h3>"
+                f"<p style='color:#555; margin-top:5px;'><i>{tea_info['desc']}</i></p>"
+                f"<b style='color:#E91E63; font-size:1.1rem;'>Giá niêm
