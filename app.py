@@ -183,18 +183,26 @@ MENU = [
     {"id":"ml06","name":"Trà dưa lưới nhiệt đới","category":"Trà trái cây","price":36000,"tag":"Seasonal","desc":"Dưa lưới thơm ngọt kết hợp trà thanh mát.","emoji":"🍈","image":"https://bucket.cooklaif.com/311-honeydew-melon-iced-green-tea-311.jpg"},
     {"id":"ml07","name":"Cà phê sữa MAMALALA","category":"Cà phê","price":29000,"tag":"Wake up","desc":"Cà phê đậm đà, sữa ngọt vừa phải.","emoji":"☕","image":"https://images.unsplash.com/photo-1461023058943-07fcbe16d735?auto=format&fit=crop&w=900&q=85"},
     {"id":"ml08","name":"Americano cam","category":"Cà phê","price":35000,"tag":"Bright","desc":"Cà phê thanh, hương cam tươi mát.","emoji":"🍊","image":"https://images.unsplash.com/photo-1517701604599-bb29b565090c?auto=format&fit=crop&w=900&q=85"},
+    {"id":"ml09","name":"Trà sữa truyền thống MAMALALA","category":"Trà sữa","price":30000,"tag":"Classic","desc":"Trà đen đậm vị kết hợp sữa thơm béo, chuẩn gu truyền thống.","emoji":"🧋","image":"https://images.unsplash.com/photo-1541696432-82c6da8ce7bf?auto=format&fit=crop&w=900&q=85"},
+    {"id":"ml10","name":"Cacao latte macchiato","category":"Trà sữa","price":38000,"tag":"Chocolate mood","desc":"Cacao thơm đậm, sữa mịn và lớp kem béo nhẹ.","emoji":"🍫","image":"https://images.unsplash.com/photo-1572490122747-3968b75cc699?auto=format&fit=crop&w=900&q=85"},
+    {"id":"ml11","name":"Trà xanh hoa nhài","category":"Trà nguyên bản","price":32000,"tag":"Floral","desc":"Hương hoa nhài dịu dàng, vị trà thanh mát dễ uống.","emoji":"🌸","image":"https://images.unsplash.com/photo-1564890369478-c89ca6d9cde9?auto=format&fit=crop&w=900&q=85"},
+    {"id":"ml12","name":"Trà Genmaicha gạo rang","category":"Trà nguyên bản","price":35000,"tag":"Japanese tea","desc":"Trà xanh Nhật Bản với hương gạo rang bùi thơm, hậu vị êm.","emoji":"🌾","image":"https://images.unsplash.com/photo-1576092768241-dec231879fc3?auto=format&fit=crop&w=900&q=85"},
+    {"id":"ml13","name":"Sữa dâu giòn ngọt","category":"Trà trái cây","price":38000,"tag":"Pink favorite","desc":"Dâu chua ngọt kết hợp sữa dịu và topping dâu giòn vui miệng.","emoji":"🍓","image":"https://images.unsplash.com/photo-1553909489-cd47e0ef937f?auto=format&fit=crop&w=900&q=85"},
 ]
 
 TOPPINGS = {"Trân châu đen":7000,"Trân châu trắng":7000,"Pudding trứng":8000,"Kem cheese":10000,"Thạch trái cây":7000}
 SIZES = {"M":0,"L":8000,"XL":15000}
 SUGAR = ["0%","30%","50%","70%","100%"]
 ICE = ["Không đá","Ít đá","Bình thường"]
-VOUCHERS = {"MAMA10":10,"SWEET15":15,"HELLO20":20}
+VOUCHERS = {"MAMA10":10,"SWEET15":15,"HELLO20":10,"THUDUC20":20,"MAMALALA50":50,"XINCHAO":10}
 STATUSES = ["Đã tiếp nhận","Đang pha chế","Sẵn sàng nhận","Đang giao","Hoàn tất","Đã hủy"]
 
 # -------------------- SESSION STATE --------------------
 defaults = {
-    "cart": [], "orders": [], "reviews": [], "points": 0,
+    "cart": [], "orders": [], "reviews": [
+        {"name":"Minh Thư","rating":5,"text":"Trà sữa đậm vị, trân châu dẻo ngon xuất sắc!","created_at":"17/10/2026"},
+        {"name":"Gia Hân","rating":5,"text":"Quán xinh, đặt món tiện lợi và giao diện dễ thương.","created_at":"16/10/2026"},
+    ], "points": 0,
     "used_vouchers": [], "active_voucher": "", "last_order_id": "",
     "passport": [], "admin_logged_in": False, "fortune_result": None,
 }
@@ -272,6 +280,7 @@ with st.sidebar:
     st.markdown("📍 32 Võ Văn Hát, P. Long Trường, TP. Thủ Đức")
     st.markdown("🕒 08:00 – 22:30")
     st.markdown("☎️ 0987 123 456")
+    st.caption("Thông tin cửa hàng là dữ liệu mẫu — hãy kiểm tra và thay bằng thông tin thật trước khi công khai website.")
     st.divider()
     st.markdown("### 🎡 Lucky Sip")
     st.write("Quay một lượt để nhận ưu đãi vui vẻ.")
@@ -291,7 +300,7 @@ with st.sidebar:
             st.session_state.active_voucher = normalized
             st.success(f"Đã áp dụng {normalized}!")
         else:
-            st.error("Mã chưa đúng. Thử MAMA10, SWEET15 hoặc HELLO20 nhé.")
+            st.error("Mã chưa đúng. Thử MAMA10, SWEET15, HELLO20, THUDUC20, MAMALALA50 hoặc XINCHAO nhé.")
     if st.session_state.active_voucher:
         st.caption(f"Mã đang dùng: {st.session_state.active_voucher}")
         if st.button("Gỡ voucher", use_container_width=True):
@@ -313,8 +322,8 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # -------------------- NAV TABS --------------------
-tab_menu, tab_mood, tab_cart, tab_track, tab_club, tab_reviews, tab_admin = st.tabs([
-    "🧋 Menu", "💗 Mood Match", f"🛍️ Giỏ hàng ({sum(i['qty'] for i in st.session_state.cart)})",
+tab_menu, tab_mood, tab_fortune, tab_cart, tab_track, tab_club, tab_reviews, tab_admin = st.tabs([
+    "🧋 Menu", "💗 Mood Match", "🔮 Quẻ bói", f"🛍️ Giỏ hàng ({sum(i['qty'] for i in st.session_state.cart)})",
     "📦 Theo dõi đơn", "🍬 Sweet Club", "⭐ Đánh giá", "🔐 Quản trị"
 ])
 
@@ -323,7 +332,7 @@ with tab_menu:
     left, right = st.columns([2,1])
     with left:
         st.markdown('<div class="section-title">Chọn món yêu thích</div>', unsafe_allow_html=True)
-        st.caption("Tuỳ chỉnh size, topping và độ ngọt theo gu của bạn.")
+        st.caption("Tuỳ chỉnh size, topping và độ ngọt theo gu của bạn. Có 13 lựa chọn trà sữa, trà trái cây, trà nguyên bản và cà phê.")
     with right:
         category = st.selectbox("Danh mục", ["Tất cả"] + sorted({p["category"] for p in MENU}))
     search = st.text_input("🔎 Tìm món", placeholder="Nhập tên trà, cà phê...")
@@ -360,23 +369,24 @@ with tab_mood:
     mood = st.radio("Chọn mood", ["Cần tỉnh táo ⚡","Muốn thư giãn 🌿","Tâm trạng ngọt ngào 🍓","Muốn tươi mát 🍊"], horizontal=True)
     mood_map = {
         "Cần tỉnh táo ⚡":["Cà phê sữa MAMALALA","Americano cam"],
-        "Muốn thư giãn 🌿":["Trà gạo rang","Matcha latte"],
-        "Tâm trạng ngọt ngào 🍓":["Trà sữa trân châu đường đen","Trà sữa ô long kem cheese"],
-        "Muốn tươi mát 🍊":["Trà đào cam sả","Trà dưa lưới nhiệt đới"],
+        "Muốn thư giãn 🌿":["Trà Genmaicha gạo rang","Matcha latte","Trà xanh hoa nhài"],
+        "Tâm trạng ngọt ngào 🍓":["Trà sữa trân châu đường đen","Trà sữa ô long kem cheese","Sữa dâu giòn ngọt","Cacao latte macchiato"],
+        "Muốn tươi mát 🍊":["Trà đào cam sả","Trà dưa lưới nhiệt đới","Trà xanh hoa nhài"],
     }
     suggested = [p for p in MENU if p["name"] in mood_map[mood]]
-    cols = st.columns(2)
-    for col, product in zip(cols, suggested):
-        with col:
-            with st.container(border=True):
-                render_product_image(product)
-                st.markdown(f"### {product['emoji']} {product['name']}")
-                st.markdown(f'<span class="price">{money(product["price"])}</span>', unsafe_allow_html=True)
-                st.write(product["desc"])
-                if st.button("Chọn món này", key=f"mood_{product['id']}", use_container_width=True):
-                    add_to_cart(product, "M", [], "50%", "Ít đá", "")
-                    st.success("Đã thêm size M vào giỏ.")
-                    st.rerun()
+    for start in range(0, len(suggested), 3):
+        cols = st.columns(3, gap="large")
+        for col, product in zip(cols, suggested[start:start+3]):
+            with col:
+                with st.container(border=True):
+                    render_product_image(product)
+                    st.markdown(f"### {product['emoji']} {product['name']}")
+                    st.markdown(f'<span class="price">{money(product["price"])}</span>', unsafe_allow_html=True)
+                    st.write(product["desc"])
+                    if st.button("Chọn món này", key=f"mood_{product['id']}", use_container_width=True):
+                        add_to_cart(product, "M", [], "50%", "Ít đá", "")
+                        st.success("Đã thêm size M vào giỏ.")
+                        st.rerun()
     st.divider()
     st.markdown("### 🔮 Một lời nhắn nhỏ")
     fortunes = [
@@ -387,6 +397,41 @@ with tab_mood:
     ]
     if st.button("Rút một lời nhắn"):
         st.info(random.choice(fortunes))
+
+# -------------------- FORTUNE / DRINK ORACLE --------------------
+with tab_fortune:
+    st.markdown('<div class="section-title">Quẻ bói MAMALALA 🔮</div>', unsafe_allow_html=True)
+    st.write("Một chút ngẫu nhiên, một chút dễ thương — để vũ trụ chọn món cho bạn hôm nay.")
+    fortune_messages = [
+        "Hôm nay, bạn xứng đáng với một điều ngọt ngào.",
+        "Đừng vội vàng — điều tốt đẹp cần thời gian để ngấm như một tách trà ngon.",
+        "Một cuộc gặp gỡ vui vẻ có thể bắt đầu từ lời rủ đi uống nước.",
+        "Bạn đang làm tốt hơn mình nghĩ. Nhớ tự thưởng cho bản thân nhé!",
+        "Năng lượng mới đang đến. Hãy thử một hương vị bạn chưa từng chọn.",
+        "Ngày hôm nay không cần hoàn hảo, chỉ cần có một khoảnh khắc vui."
+    ]
+    if st.button("✨ GIEO QUẺ & CHỌN MÓN", type="primary", use_container_width=True):
+        st.session_state.fortune_product_id = random.choice(MENU)["id"]
+        st.session_state.fortune_message = random.choice(fortune_messages)
+    if st.session_state.get("fortune_product_id"):
+        oracle_product = get_product(st.session_state.fortune_product_id)
+        if oracle_product:
+            st.balloons()
+            with st.container(border=True):
+                oracle_left, oracle_right = st.columns([1, 1.4], gap="large")
+                with oracle_left:
+                    render_product_image(oracle_product)
+                with oracle_right:
+                    st.markdown("### 🌟 Món quà từ vũ trụ")
+                    st.markdown(f"## {oracle_product['emoji']} {oracle_product['name']}")
+                    st.markdown(f'<span class="price">{money(oracle_product["price"])}</span>', unsafe_allow_html=True)
+                    st.write(oracle_product["desc"])
+                    st.info(st.session_state.get("fortune_message", "Hãy tận hưởng một ngày thật dịu dàng!"))
+                    if st.button("🧋 Thêm món được chọn vào giỏ", key="add_oracle_drink", use_container_width=True):
+                        add_to_cart(oracle_product, "M", [], "50%", "Ít đá", "Món được chọn từ Quẻ bói MAMALALA")
+                        st.success("Đã thêm món vào giỏ!")
+                        st.rerun()
+    st.caption("Quẻ bói chỉ là minigame giải trí — lựa chọn hoàn toàn ngẫu nhiên.")
 
 # -------------------- CART / CHECKOUT --------------------
 with tab_cart:
@@ -655,4 +700,4 @@ with tab_admin:
         else:
             st.info("Chưa có đơn hàng nào trong phiên chạy này.")
 
-st.markdown('<div class="footer">🧋 MAMALALA · Tea • Coffee • Little Joy<br>Made with a little sweetness and a lot of love.</div>', unsafe_allow_html=True)
+st.markdown('<div class="footer">🧋 MAMALALA · Tea • Coffee • Little Joy<br>Personalized drinks · Mood Match · Lucky Sip · Sweet Club</div>', unsafe_allow_html=True)
