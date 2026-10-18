@@ -1,1313 +1,617 @@
-
 import streamlit as st
 import pandas as pd
 from datetime import datetime
-from collections import Counter
-import random
-import urllib.parse
+from urllib.parse import quote
 import uuid
-import html
+import random
+import requests
+from PIL import Image
+from io import BytesIO
 
 # =========================================================
-# MAMALALA 2.0 - TEA & COFFEE STUDIO
-# Demo dự án: Streamlit
+# MAMALALA — Streamlit demo shop
+# Run: streamlit run app.py
 # =========================================================
 
 st.set_page_config(
-    page_title="MAMALALA | Tea & Coffee Studio",
+    page_title="MAMALALA | Tea • Coffee • Little Joy",
     page_icon="🧋",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
-# -------------------- 1. GIAO DIỆN --------------------
-
+# -------------------- THEME / CSS --------------------
+# Main fix: explicit dark text colors on light backgrounds.
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap');
 
 :root {
-    --pink: #e85d7f;
-    --pink-dark: #bd3458;
-    --cream: #fff8f3;
-    --ink: #34252b;
-    --muted: #796b71;
+  --pink: #e9a9bd;
+  --pink-dark: #b85e7d;
+  --pink-light: #fff3f6;
+  --cream: #fffaf8;
+  --ink: #292832;
+  --muted: #66616b;
+  --line: #f0dce3;
+  --card: #ffffff;
 }
-
-html, body, [class*="css"] {
-    font-family: 'DM Sans', sans-serif;
+html, body, [class*="css"], .stApp {
+  font-family: 'Be Vietnam Pro', sans-serif !important;
 }
-
 .stApp {
-    background: linear-gradient(
-        180deg, #fff9f6 0%, #ffffff 55%, #fff5f8 100%
-    );
+  background: linear-gradient(180deg, #fffaf9 0%, #fff5f7 100%);
+  color: var(--ink) !important;
 }
-
-.block-container {
-    max-width: 1450px;
-    padding-top: 1.5rem;
-    padding-bottom: 3rem;
-}
-
-.hero {
-    background:
-        radial-gradient(circle at 12% 20%, #ffe1e9 0, transparent 35%),
-        linear-gradient(120deg, #fff0e8, #ffe0e9 60%, #f6d8e6);
-    border: 1px solid #f5d0dc;
-    border-radius: 26px;
-    padding: 32px;
-    margin-bottom: 18px;
-}
-
-.hero-kicker {
-    color: #a84360;
-    font-weight: 800;
-    letter-spacing: 2px;
-    font-size: .76rem;
-}
-
-.hero-title {
-    font-family: 'Playfair Display', serif;
-    color: #7d2945;
-    font-size: clamp(2.1rem, 5vw, 3.6rem);
-    line-height: 1.08;
-    margin: 10px 0;
-}
-
-.hero-copy {
-    color: #704c59;
-    max-width: 680px;
-    font-size: 1rem;
-}
-
-.pill {
-    display: inline-block;
-    background: white;
-    color: #a13d5b;
-    border: 1px solid #f2cbd6;
-    border-radius: 100px;
-    padding: 6px 12px;
-    margin: 5px 5px 0 0;
-    font-size: .8rem;
-    font-weight: 700;
-}
-
-.product-card {
-    background: white;
-    border: 1px solid #f1dce2;
-    border-radius: 16px;
-    padding: 15px;
-    box-shadow: 0 6px 20px rgba(112,48,70,.06);
-    margin-bottom: 10px;
-}
-
-.product-title {
-    color: #492b36;
-    font-size: 1rem;
-    font-weight: 800;
-    min-height: 2.6rem;
-}
-
-.product-desc {
-    color: #796b71;
-    font-size: .86rem;
-    min-height: 2.8rem;
-}
-
-.price {
-    color: #c43e65;
-    font-size: 1.15rem;
-    font-weight: 800;
-}
-
-.tag {
-    display: inline-block;
-    background: #fff0f4;
-    color: #b33b5d;
-    border-radius: 7px;
-    padding: 4px 7px;
-    font-size: .7rem;
-    font-weight: 800;
-}
-
-.section-kicker {
-    color: #b44c68;
-    font-weight: 800;
-    letter-spacing: 1.5px;
-    font-size: .75rem;
-}
-
-div.stButton > button {
-    border-radius: 12px;
-    font-weight: 700;
-    border: 1px solid #f0c7d2;
-}
-
-div.stButton > button[kind="primary"] {
-    background: linear-gradient(120deg, #e85d7f, #c83f66);
-    color: white;
-    border: 0;
-}
-
-div.stButton > button:hover {
-    border-color: #e85d7f;
-}
-
+[data-testid="stHeader"] { background: rgba(255,250,249,.92); }
 [data-testid="stSidebar"] {
-    background: #fff4f6;
-    border-right: 1px solid #f4dce3;
+  background: #fff2f5 !important;
+  border-right: 1px solid #f0dce3;
 }
-
-[data-testid="stMetric"] {
-    background: white;
-    border: 1px solid #f2dce2;
-    padding: 14px;
-    border-radius: 14px;
+[data-testid="stSidebar"] * {
+  color: #302832 !important;
 }
-
-.small-muted {
-    color: #84757b;
-    font-size: .82rem;
+[data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2,
+[data-testid="stSidebar"] h3, [data-testid="stSidebar"] p,
+[data-testid="stSidebar"] label, [data-testid="stSidebar"] span,
+[data-testid="stSidebar"] div {
+  color: #302832;
+}
+h1, h2, h3, h4, p, label, li, .stMarkdown, [data-testid="stCaptionContainer"] {
+  color: #292832;
+}
+h1 { letter-spacing: -1.2px; }
+p, li, label, .stCaption { line-height: 1.55; }
+small, [data-testid="stCaptionContainer"] { color: #68616a !important; }
+div[data-testid="stMetric"] {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 15px 18px;
+  box-shadow: 0 4px 18px rgba(100,50,70,.04);
+}
+div[data-testid="stMetric"] label,
+div[data-testid="stMetric"] [data-testid="stMetricValue"],
+div[data-testid="stMetric"] [data-testid="stMetricDelta"] {
+  color: #292832 !important;
+}
+div[data-testid="stForm"] {
+  background: #fff;
+  border: 1px solid var(--line);
+  padding: 18px;
+  border-radius: 18px;
+}
+div[data-testid="stVerticalBlockBorderWrapper"] {
+  border-color: var(--line) !important;
+  border-radius: 18px !important;
+}
+.stButton > button, .stDownloadButton > button, button[kind="primary"] {
+  border-radius: 13px !important;
+  border: 1px solid #e5a6bb !important;
+  font-weight: 700 !important;
+  min-height: 43px;
+  color: #292832 !important;
+  background: #ffe7ef !important;
+  transition: .18s ease;
+}
+.stButton > button:hover, .stDownloadButton > button:hover {
+  background: #f8d1df !important;
+  border-color: #c87895 !important;
+}
+button[kind="primary"] {
+  color: #fff !important;
+  background: #292832 !important;
+  border-color: #292832 !important;
+}
+button[kind="primary"]:hover { background: #484450 !important; }
+.stTextInput input, .stTextArea textarea, .stNumberInput input,
+.stSelectbox div[data-baseweb="select"] > div,
+.stMultiSelect div[data-baseweb="select"] > div {
+  background: #fff !important;
+  color: #292832 !important;
+  border-color: #dfd6dc !important;
+  border-radius: 10px !important;
+}
+.stTextInput input::placeholder, .stTextArea textarea::placeholder {
+  color: #8a8189 !important;
+}
+.stRadio label, .stCheckbox label, .stSlider label, .stSelectbox label,
+.stTextInput label, .stTextArea label, .stNumberInput label {
+  color: #292832 !important;
+}
+[data-baseweb="tab-list"] { gap: 8px; }
+button[data-baseweb="tab"] {
+  color: #5a4b55 !important;
+  border-radius: 10px 10px 0 0;
+}
+button[data-baseweb="tab"][aria-selected="true"] {
+  color: #9b3f61 !important;
+  border-bottom-color: #c66c8c !important;
+}
+.hero {
+  padding: 34px 32px;
+  border-radius: 26px;
+  background: linear-gradient(120deg, #ffe1eb 0%, #fff4e9 58%, #f9d9e4 100%);
+  border: 1px solid #f0ccd8;
+  margin-bottom: 22px;
+}
+.hero h1 { color: #332832 !important; font-size: clamp(2rem, 4vw, 3.4rem); margin: 0; }
+.hero p { color: #5f4b56 !important; margin: 8px 0 0 0; }
+.eyebrow {
+  display: inline-block; background: #fff; color: #9b3f61;
+  border: 1px solid #f0c6d5; padding: 5px 11px; border-radius: 999px;
+  font-size: .78rem; font-weight: 800; letter-spacing: .5px; margin-bottom: 10px;
+}
+.section-title { font-size: 1.45rem; font-weight: 800; color: #302832; margin: 8px 0 4px; }
+.product-card {
+  background: #fff; border: 1px solid #f0dce3; border-radius: 18px;
+  padding: 14px; box-shadow: 0 5px 20px rgba(90,40,60,.045);
+}
+.price { color: #a94769; font-weight: 800; font-size: 1.08rem; }
+.pill {
+  display:inline-block; padding:4px 9px; border-radius:999px;
+  background:#fff0f5; color:#8e3e5b; font-size:.75rem; font-weight:700;
+}
+.notice {
+  background:#fff; border-left:4px solid #c66c8c; border-radius:10px;
+  padding:12px 15px; color:#39313a; margin:8px 0 14px;
+}
+.footer {
+  text-align:center; color:#756873; padding:28px 0 12px; font-size:.85rem;
+}
+hr { border-color: #f0dce3 !important; }
+[data-testid="stAlert"] { color: #292832 !important; }
+@media (max-width: 700px) {
+  .hero { padding: 24px 20px; }
 }
 </style>
 """, unsafe_allow_html=True)
 
-
-# -------------------- 2. MENU --------------------
-# Bạn có thể thay URL ảnh bằng ảnh sản phẩm của quán.
-# Nếu có ảnh trong GitHub, đặt trong thư mục images/.
-
-MENU = {
-    "🧋 Trà Sữa Signatures": [
-        {
-            "name": "Trà Sữa Truyền Thống MAMALALA",
-            "price": 20000,
-            "desc": "Đậm trà, béo dịu, chuẩn vị thân quen.",
-            "tag": "🔥 BEST SELLER",
-            "image": "https://images.unsplash.com/photo-1558857563-b371033873b8?auto=format&fit=crop&w=800&q=80",
-            "mood": ["sweet", "comfort"],
-        },
-        {
-            "name": "Sữa Tươi Trân Châu Đường Đen",
-            "price": 35000,
-            "desc": "Sữa tươi kết hợp trân châu đường đen.",
-            "tag": "👑 SIGNATURE",
-            "image": "https://images.unsplash.com/photo-1558857563-b371033873b8?auto=format&fit=crop&w=800&q=80",
-            "mood": ["sweet", "comfort"],
-        },
-        {
-            "name": "Matcha Freeze Uji Nhật Bản",
-            "price": 35000,
-            "desc": "Matcha thơm thanh, hậu vị dịu mát.",
-            "tag": "🌿 GREEN PICK",
-            "image": "https://images.unsplash.com/photo-1515823064-d6e0c04616a7?auto=format&fit=crop&w=800&q=80",
-            "mood": ["fresh", "focus"],
-        },
-        {
-            "name": "Cacao Latte Macchiato",
-            "price": 35000,
-            "desc": "Cacao đậm vị cùng lớp sữa mịn.",
-            "tag": "🍫 CHOCO LOVE",
-            "image": "https://images.unsplash.com/photo-1572490122747-3968b75cc699?auto=format&fit=crop&w=800&q=80",
-            "mood": ["comfort", "sweet"],
-        },
-    ],
-    "🍓 Trà Trái Cây Tươi Mới": [
-        {
-            "name": "Trà Xanh Hoa Nhài Thanh Lương",
-            "price": 32000,
-            "desc": "Hương nhài nhẹ nhàng, thanh mát.",
-            "tag": "🌸 LIGHT & FRESH",
-            "image": "https://images.unsplash.com/photo-1556679343-c7306c1976bc?auto=format&fit=crop&w=800&q=80",
-            "mood": ["fresh", "calm"],
-        },
-        {
-            "name": "Trà Gạo Rang Genmaicha",
-            "price": 35000,
-            "desc": "Hương gạo rang ấm áp, vị trà cân bằng.",
-            "tag": "⭐ TEA LOVER",
-            "image": "https://images.unsplash.com/photo-1544787219-7f47af3fc05e?auto=format&fit=crop&w=800&q=80",
-            "mood": ["calm", "focus"],
-        },
-        {
-            "name": "Sữa Dâu MAMALALA",
-            "price": 38000,
-            "desc": "Hương dâu ngọt ngào, màu hồng xinh.",
-            "tag": "📸 PHOTO PICK",
-            "image": "https://images.unsplash.com/photo-1544145945-f90425340c7e?auto=format&fit=crop&w=800&q=80",
-            "mood": ["sweet", "comfort"],
-        },
-        {
-            "name": "Trà Dưa Lưới Nhiệt Đới",
-            "price": 32000,
-            "desc": "Vị trái cây tươi mát cho ngày nắng.",
-            "tag": "🍈 TROPICAL",
-            "image": "https://images.unsplash.com/photo-1513558161293-cdaf765edfd7?auto=format&fit=crop&w=800&q=80",
-            "mood": ["fresh", "calm"],
-        },
-    ],
-}
-
-SIZE_OPTIONS = {"S": 0, "M": 5000, "L": 10000}
-
-TOPPING_OPTIONS = {
-    "Trân châu đen": 5000,
-    "Trân châu trắng": 7000,
-    "Thạch trái cây": 5000,
-    "Pudding trứng": 8000,
-    "Kem Cheese": 10000,
-}
-
-SUGAR_LEVELS = ["100%", "70%", "50%", "30%", "0%"]
-ICE_LEVELS = ["100%", "70%", "50%", "30%", "0%"]
-
-VOUCHER_CODES = {
-    "THUDUC20": 20,
-    "MAMALALA50": 50,
-    "XINCHAO": 10,
-}
-
-ORDER_STATUSES = [
-    "Đã tiếp nhận",
-    "Đang pha chế",
-    "Sẵn sàng nhận",
-    "Đang giao",
-    "Hoàn tất",
-    "Đã hủy",
+# -------------------- DATA --------------------
+MENU = [
+    {"id":"ml01","name":"Trà sữa trân châu đường đen","category":"Trà sữa","price":39000,"tag":"Best seller","desc":"Trà sữa béo thơm, trân châu dai và sốt đường đen.","emoji":"🧋","image":"https://images.unsplash.com/photo-1558857563-b371033873b8?auto=format&fit=crop&w=900&q=85"},
+    {"id":"ml02","name":"Trà sữa ô long kem cheese","category":"Trà sữa","price":42000,"tag":"Creamy","desc":"Ô long thơm nhẹ, lớp kem cheese mặn ngọt.","emoji":"🥤","image":"https://images.unsplash.com/photo-1558857563-b371033873b8?auto=format&fit=crop&w=900&q=85"},
+    {"id":"ml03","name":"Matcha latte","category":"Trà sữa","price":42000,"tag":"Green mood","desc":"Matcha thơm, vị đắng dịu và sữa mịn.","emoji":"🍵","image":"https://images.unsplash.com/photo-1515823064-d6e0c04616a7?auto=format&fit=crop&w=900&q=85"},
+    {"id":"ml04","name":"Trà đào cam sả","category":"Trà trái cây","price":35000,"tag":"Fresh","desc":"Trà thanh mát, đào ngọt dịu, cam và sả thơm.","emoji":"🍑","image":"https://images.unsplash.com/photo-1556679343-c7306c1976bc?auto=format&fit=crop&w=900&q=85"},
+    {"id":"ml05","name":"Trà gạo rang","category":"Trà nguyên bản","price":32000,"tag":"Gentle","desc":"Hương gạo rang ấm, hậu vị dịu và dễ uống.","emoji":"🌾","image":"https://images.unsplash.com/photo-1576092768241-dec231879fc3?auto=format&fit=crop&w=900&q=85"},
+    {"id":"ml06","name":"Trà dưa lưới nhiệt đới","category":"Trà trái cây","price":36000,"tag":"Seasonal","desc":"Dưa lưới thơm ngọt kết hợp trà thanh mát.","emoji":"🍈","image":"https://images.unsplash.com/photo-1513558161293-cusb3e7c5d?auto=format&fit=crop&w=900&q=85"},
+    {"id":"ml07","name":"Cà phê sữa MAMALALA","category":"Cà phê","price":29000,"tag":"Wake up","desc":"Cà phê đậm đà, sữa ngọt vừa phải.","emoji":"☕","image":"https://images.unsplash.com/photo-1461023058943-07fcbe16d735?auto=format&fit=crop&w=900&q=85"},
+    {"id":"ml08","name":"Americano cam","category":"Cà phê","price":35000,"tag":"Bright","desc":"Cà phê thanh, hương cam tươi mát.","emoji":"🍊","image":"https://images.unsplash.com/photo-1517701604599-bb29b565090c?auto=format&fit=crop&w=900&q=85"},
 ]
 
-FORTUNES = [
-    "Một ngày dịu dàng bắt đầu từ một ngụm trà ngon. 🌷",
-    "Bạn xứng đáng có một khoảng nghỉ ngọt ngào hôm nay. 💗",
-    "Năng lượng mới đang chờ bạn ở chiếc ly tiếp theo. ✨",
-    "Chậm lại một chút, thưởng thức điều mình thích nhé. 🍵",
-]
+TOPPINGS = {"Trân châu đen":7000,"Trân châu trắng":7000,"Pudding trứng":8000,"Kem cheese":10000,"Thạch trái cây":7000}
+SIZES = {"M":0,"L":8000,"XL":15000}
+SUGAR = ["0%","30%","50%","70%","100%"]
+ICE = ["Không đá","Ít đá","Bình thường"]
+VOUCHERS = {"MAMA10":10,"SWEET15":15,"HELLO20":20}
+STATUSES = ["Đã tiếp nhận","Đang pha chế","Sẵn sàng nhận","Đang giao","Hoàn tất","Đã hủy"]
 
-
-# -------------------- 3. SESSION STATE --------------------
-
-DEFAULTS = {
-    "cart": [],
-    "orders": [],
-    "reviews": [
-        {
-            "name": "Gia Hân",
-            "rating": 5,
-            "comment": "Quán xinh, trà thơm và dễ uống.",
-            "date": "16/10/2026",
-        },
-        {
-            "name": "Minh Anh",
-            "rating": 5,
-            "comment": "Trân châu dẻo, đóng gói chỉn chu.",
-            "date": "15/10/2026",
-        },
-    ],
-    "spin_discount": 0,
-    "promo_discount": 0,
-    "used_vouchers": [],
-    "last_order_id": None,
-    "member_points": 35,
-    "fortune": "",
-    "mood_pick": "",
-    "admin_logged_in": False,
-    "admin_attempts": 0,
+# -------------------- SESSION STATE --------------------
+defaults = {
+    "cart": [], "orders": [], "reviews": [], "points": 0,
+    "used_vouchers": [], "active_voucher": "", "last_order_id": "",
+    "passport": [], "admin_logged_in": False, "fortune_result": None,
 }
-
-for key, value in DEFAULTS.items():
+for key, value in defaults.items():
     if key not in st.session_state:
         st.session_state[key] = value
 
-
-# -------------------- 4. HÀM HỖ TRỢ --------------------
-
 def money(value):
-    return f"{int(value):,}".replace(",", ".") + " VNĐ"
+    return f"{int(value):,}đ".replace(",", ".")
 
-
-def all_products():
-    return [
-        product
-        for category in MENU.values()
-        for product in category
-    ]
-
-
-def find_product(name):
-    for product in all_products():
-        if product["name"] == name:
-            return product
-    return None
-
+def get_product(product_id):
+    return next((p for p in MENU if p["id"] == product_id), None)
 
 def cart_subtotal():
-    return sum(
-        item["unit_price"] * item["qty"]
-        for item in st.session_state.cart
-    )
+    return sum(item["unit_price"] * item["qty"] for item in st.session_state.cart)
 
+def cart_total():
+    subtotal = cart_subtotal()
+    discount = 0
+    code = st.session_state.active_voucher
+    if code in VOUCHERS:
+        discount = int(subtotal * VOUCHERS[code] / 100)
+    return max(0, subtotal - discount), discount
 
-def current_discount():
-    # Tổng giảm giá tối đa 60%, không để voucher xóa toàn bộ tiền hàng.
-    return min(
-        60,
-        st.session_state.spin_discount
-        + st.session_state.promo_discount,
-    )
+def fetch_image(url):
+    """Download image and return a PIL image; failed URLs return None, never break the app."""
+    try:
+        response = requests.get(url, timeout=5, headers={"User-Agent":"Mozilla/5.0"})
+        response.raise_for_status()
+        image = Image.open(BytesIO(response.content))
+        image.verify()
+        response = requests.get(url, timeout=5, headers={"User-Agent":"Mozilla/5.0"})
+        response.raise_for_status()
+        return Image.open(BytesIO(response.content)).convert("RGB")
+    except Exception:
+        return None
 
+@st.cache_data(ttl=3600, show_spinner=False)
+def cached_image(url):
+    return fetch_image(url)
 
-def add_to_cart(product, size, sugar, ice, toppings, qty, note):
-    unit_price = (
-        product["price"]
-        + SIZE_OPTIONS[size]
-        + sum(TOPPING_OPTIONS[t] for t in toppings)
-    )
-
+def add_to_cart(product, size, toppings, sugar, ice, note):
+    topping_cost = sum(TOPPINGS[t] for t in toppings)
+    unit_price = product["price"] + SIZES[size] + topping_cost
+    key = str(uuid.uuid4())[:8]
     st.session_state.cart.append({
-        "name": product["name"],
-        "size": size,
-        "sugar": sugar,
-        "ice": ice,
-        "toppings": list(toppings),
-        "qty": int(qty),
-        "note": note.strip() or "-",
-        "unit_price": unit_price,
+        "key": key, "id": product["id"], "name": product["name"],
+        "size": size, "toppings": toppings, "sugar": sugar, "ice": ice,
+        "note": note.strip(), "unit_price": unit_price, "qty": 1,
     })
 
-
-def find_order(order_id):
-    return next(
-        (
-            order for order in st.session_state.orders
-            if order["order_id"] == order_id
-        ),
-        None,
-    )
-
-
-# -------------------- 5. SIDEBAR --------------------
-
-with st.sidebar:
-    st.markdown("## 🧋 MAMALALA")
-    st.caption("TEA • COFFEE • LITTLE JOY")
-
-    st.markdown("---")
-    st.markdown("### 🏡 Thông tin cửa hàng")
-    st.write("📍 32 Võ Văn Hát, P. Long Trường, TP. Thủ Đức")
-    st.write("⏰ 08:00 – 22:30")
-    st.write("☎️ 0987.xxx.xxx")
-
-    st.markdown("---")
-    st.markdown("### 🎡 Lucky Sip")
-    st.caption("Quay một lượt để nhận ưu đãi vui vẻ.")
-
-    if st.button("🎁 QUAY NHẬN VOUCHER", use_container_width=True):
-        st.session_state.spin_discount = random.choices(
-            [0, 5, 10, 15, 20],
-            weights=[20, 30, 25, 17, 8],
-        )[0]
-
-        if st.session_state.spin_discount > 0:
-            st.balloons()
-            st.success(
-                f"Bạn nhận được voucher "
-                f"{st.session_state.spin_discount}%!"
-            )
-        else:
-            st.info("Chưa trúng lần này. Hẹn bạn lượt sau!")
-
-    if st.session_state.spin_discount:
-        st.caption(
-            f"Voucher vòng quay: "
-            f"-{st.session_state.spin_discount}%"
+def render_product_image(product, height=190):
+    image = cached_image(product["image"])
+    if image is not None:
+        st.image(image, use_container_width=True)
+    else:
+        # Guaranteed readable fallback when an external image is unavailable.
+        st.markdown(
+            f"""<div style="height:{height}px;border-radius:14px;
+            background:linear-gradient(135deg,#ffe4ed,#fff3e8);
+            border:1px solid #f0d2dd;display:flex;align-items:center;
+            justify-content:center;flex-direction:column;">
+            <div style="font-size:4rem">{product['emoji']}</div>
+            <div style="font-weight:800;color:#7d4058;margin-top:4px">{product['name']}</div>
+            <div style="font-size:.8rem;color:#806c76">MAMALALA • made with love</div></div>""",
+            unsafe_allow_html=True
         )
 
-    st.markdown("---")
+# -------------------- SIDEBAR --------------------
+with st.sidebar:
+    st.markdown("# 🧋 MAMALALA")
+    st.markdown("**TEA • COFFEE • LITTLE JOY**")
+    st.divider()
+    st.markdown("### 🏡 Thông tin cửa hàng")
+    st.markdown("📍 32 Võ Văn Hát, P. Long Trường, TP. Thủ Đức")
+    st.markdown("🕒 08:00 – 22:30")
+    st.markdown("☎️ 0987 123 456")
+    st.divider()
+    st.markdown("### 🎡 Lucky Sip")
+    st.write("Quay một lượt để nhận ưu đãi vui vẻ.")
+    if st.button("🎁 QUAY NHẬN VOUCHER", use_container_width=True):
+        possible = ["MAMA10","SWEET15","HELLO20"]
+        st.session_state.fortune_result = random.choice(possible)
+    if st.session_state.fortune_result:
+        st.success(f"Bạn nhận được mã **{st.session_state.fortune_result}** giảm {VOUCHERS[st.session_state.fortune_result]}%!")
+        if st.button("Dùng mã này", key="use_lucky_voucher", use_container_width=True):
+            st.session_state.active_voucher = st.session_state.fortune_result
+            st.rerun()
     st.markdown("### 🎟️ Mã giảm giá")
-
-    voucher_code = st.text_input(
-        "Nhập mã voucher",
-        placeholder="Ví dụ: XINCHAO",
-        key="voucher_input",
-    ).strip().upper()
-
-    if st.button("ÁP DỤNG MÃ", use_container_width=True):
-        if voucher_code in st.session_state.used_vouchers:
-            st.error("Mã này đã được sử dụng trong phiên demo.")
-        elif voucher_code in VOUCHER_CODES:
-            st.session_state.promo_discount = VOUCHER_CODES[voucher_code]
-            st.session_state.active_voucher = voucher_code
-            st.success(
-                f"Đã áp dụng mã giảm "
-                f"{VOUCHER_CODES[voucher_code]}%."
-            )
+    code_input = st.text_input("Nhập mã voucher", placeholder="Ví dụ: MAMA10", key="voucher_input")
+    if st.button("Áp dụng mã", use_container_width=True):
+        normalized = code_input.strip().upper()
+        if normalized in VOUCHERS:
+            st.session_state.active_voucher = normalized
+            st.success(f"Đã áp dụng {normalized}!")
         else:
-            st.session_state.promo_discount = 0
+            st.error("Mã chưa đúng. Thử MAMA10, SWEET15 hoặc HELLO20 nhé.")
+    if st.session_state.active_voucher:
+        st.caption(f"Mã đang dùng: {st.session_state.active_voucher}")
+        if st.button("Gỡ voucher", use_container_width=True):
             st.session_state.active_voucher = ""
-            st.error("Mã không hợp lệ.")
+            st.rerun()
+    st.divider()
+    st.markdown(f"### 🍬 Sweet Club\n**{st.session_state.points} điểm**")
+    st.caption("Demo: 1.000đ chi tiêu = 1 điểm. Điểm được cộng khi tạo đơn.")
 
-    st.caption(
-        "Bản demo: giới hạn giảm giá và sử dụng voucher "
-        "chỉ được mô phỏng trong phiên hiện tại."
-    )
-
-
-# -------------------- 6. HERO BANNER --------------------
-
+# -------------------- HERO --------------------
 st.markdown("""
 <div class="hero">
-    <div class="hero-kicker">A LITTLE CUP OF HAPPINESS</div>
-    <div class="hero-title">MAMALALA<br>Tea & Coffee Studio</div>
-    <div class="hero-copy">
-        Chọn vị bạn yêu, tạo chiếc ly của riêng mình
-        và để hôm nay ngọt ngào hơn một chút.
-    </div>
-    <div>
-        <span class="pill">✦ Pha chế theo gu</span>
-        <span class="pill">♡ Made with care</span>
-        <span class="pill">☁️ Sip your mood</span>
-    </div>
+  <span class="eyebrow">A LITTLE JOY IN EVERY SIP</span>
+  <h1>🧋 MAMALALA</h1>
+  <p>Trà ngon, cà phê thơm và những niềm vui nho nhỏ dành riêng cho bạn.</p>
 </div>
 """, unsafe_allow_html=True)
 
-hero1, hero2, hero3 = st.columns(3)
-hero1.metric("🧋 Sản phẩm", len(all_products()))
-hero2.metric("🎀 Điểm Sweet Club", st.session_state.member_points)
-hero3.metric("🛒 Món trong giỏ", sum(
-    item["qty"] for item in st.session_state.cart
-))
-
-
-# -------------------- 7. TABS --------------------
-
-tab_shop, tab_mood, tab_cart, tab_tracking, tab_club, tab_reviews, tab_admin = st.tabs([
-    "🛍️ Cửa hàng",
-    "✨ Mood Match",
-    "🛒 Giỏ hàng & thanh toán",
-    "📦 Theo dõi đơn",
-    "🎀 Sweet Club",
-    "⭐ Đánh giá",
-    "📊 Quản trị",
+# -------------------- NAV TABS --------------------
+tab_menu, tab_mood, tab_cart, tab_track, tab_club, tab_reviews, tab_admin = st.tabs([
+    "🧋 Menu", "💗 Mood Match", f"🛍️ Giỏ hàng ({sum(i['qty'] for i in st.session_state.cart)})",
+    "📦 Theo dõi đơn", "🍬 Sweet Club", "⭐ Đánh giá", "🔐 Quản trị"
 ])
 
+# -------------------- MENU --------------------
+with tab_menu:
+    left, right = st.columns([2,1])
+    with left:
+        st.markdown('<div class="section-title">Chọn món yêu thích</div>', unsafe_allow_html=True)
+        st.caption("Tuỳ chỉnh size, topping và độ ngọt theo gu của bạn.")
+    with right:
+        category = st.selectbox("Danh mục", ["Tất cả"] + sorted({p["category"] for p in MENU}))
+    search = st.text_input("🔎 Tìm món", placeholder="Nhập tên trà, cà phê...")
+    filtered = [p for p in MENU if (category == "Tất cả" or p["category"] == category)
+                and search.lower() in p["name"].lower()]
+    if not filtered:
+        st.info("Chưa tìm thấy món phù hợp. Thử từ khoá khác nhé.")
+    for start in range(0, len(filtered), 2):
+        cols = st.columns(2, gap="large")
+        for col, product in zip(cols, filtered[start:start+2]):
+            with col:
+                with st.container(border=True):
+                    render_product_image(product)
+                    st.markdown(f"### {product['emoji']} {product['name']}")
+                    st.markdown(f'<span class="pill">{product["tag"]}</span> &nbsp; <span class="price">{money(product["price"])}</span>', unsafe_allow_html=True)
+                    st.write(product["desc"])
+                    with st.form(f"form_{product['id']}"):
+                        size = st.radio("Size", list(SIZES.keys()), horizontal=True, key=f"size_{product['id']}")
+                        toppings = st.multiselect("Topping", list(TOPPINGS.keys()), key=f"top_{product['id']}")
+                        sugar = st.select_slider("Đường", options=SUGAR, value="50%", key=f"sugar_{product['id']}")
+                        ice = st.selectbox("Đá", ICE, key=f"ice_{product['id']}")
+                        note = st.text_input("Ghi chú", placeholder="Ví dụ: ít ngọt hơn", key=f"note_{product['id']}")
+                        price_preview = product["price"] + SIZES[size] + sum(TOPPINGS[t] for t in toppings)
+                        st.markdown(f"**Tạm tính: {money(price_preview)}**")
+                        if st.form_submit_button("＋ Thêm vào giỏ", use_container_width=True):
+                            add_to_cart(product, size, toppings, sugar, ice, note)
+                            st.success("Đã thêm món vào giỏ!")
+                            st.rerun()
 
-# =========================================================
-# TAB 1: CỬA HÀNG
-# =========================================================
-
-with tab_shop:
-    st.markdown(
-        '<div class="section-kicker">FIND YOUR NEW FAVORITE</div>',
-        unsafe_allow_html=True,
-    )
-    st.header("Hôm nay mình uống gì nhỉ?")
-
-    search = st.text_input(
-        "🔎 Tìm đồ uống",
-        placeholder="Tìm matcha, dâu, trà sữa...",
-        key="product_search",
-    ).strip().lower()
-
-    categories = ["Tất cả"] + list(MENU.keys())
-
-    category_selected = st.selectbox(
-        "Danh mục sản phẩm",
-        categories,
-        key="product_category",
-    )
-
-    if category_selected == "Tất cả":
-        product_list = all_products()
-    else:
-        product_list = MENU[category_selected]
-
-    product_list = [
-        p for p in product_list
-        if search in p["name"].lower()
-        or search in p["desc"].lower()
-    ]
-
-    if not product_list:
-        st.warning("Không tìm thấy món phù hợp.")
-    else:
-        cols = st.columns(4)
-
-        for index, product in enumerate(product_list):
-            with cols[index % 4]:
-                st.image(
-                    product["image"],
-                    use_container_width=True,
-                )
-
-                safe_name = html.escape(product["name"])
-                safe_desc = html.escape(product["desc"])
-                safe_tag = html.escape(product["tag"])
-
-                st.markdown(
-                    f"""
-                    <div class="product-card">
-                        <span class="tag">{safe_tag}</span>
-                        <div class="product-title">{safe_name}</div>
-                        <div class="product-desc">{safe_desc}</div>
-                        <div class="price">{money(product['price'])}</div>
-                    </div>
-                    """,
-                    unsafe_allow_html=True,
-                )
-
-                with st.expander("✨ Tùy chỉnh ly"):
-                    size = st.radio(
-                        "Size",
-                        list(SIZE_OPTIONS.keys()),
-                        horizontal=True,
-                        key=f"size_{product['name']}",
-                    )
-
-                    sugar = st.select_slider(
-                        "Đường",
-                        options=SUGAR_LEVELS,
-                        value="70%",
-                        key=f"sugar_{product['name']}",
-                    )
-
-                    ice = st.select_slider(
-                        "Đá",
-                        options=ICE_LEVELS,
-                        value="70%",
-                        key=f"ice_{product['name']}",
-                    )
-
-                    toppings = st.multiselect(
-                        "Topping",
-                        list(TOPPING_OPTIONS.keys()),
-                        key=f"topping_{product['name']}",
-                    )
-
-                    qty = st.number_input(
-                        "Số lượng",
-                        min_value=1,
-                        max_value=20,
-                        value=1,
-                        key=f"qty_{product['name']}",
-                    )
-
-                    note = st.text_input(
-                        "Ghi chú",
-                        placeholder="Ví dụ: ít đá...",
-                        key=f"note_{product['name']}",
-                    )
-
-                    unit_price = (
-                        product["price"]
-                        + SIZE_OPTIONS[size]
-                        + sum(TOPPING_OPTIONS[t] for t in toppings)
-                    )
-
-                    st.write(f"Đơn giá: **{money(unit_price)}**")
-
-                    if st.button(
-                        "＋ Thêm vào giỏ",
-                        key=f"add_{product['name']}",
-                        type="primary",
-                        use_container_width=True,
-                    ):
-                        add_to_cart(
-                            product, size, sugar, ice,
-                            toppings, qty, note,
-                        )
-                        st.toast(
-                            f"Đã thêm {product['name']} vào giỏ!",
-                            icon="🧋",
-                        )
-                        st.rerun()
-
-    st.markdown("---")
-    st.caption(
-        "Ảnh minh họa từ nguồn trực tuyến. "
-        "Bạn nên thay bằng ảnh thật của MAMALALA để tạo nhận diện riêng."
-    )
-
-
-# =========================================================
-# TAB 2: MOOD MATCH
-# =========================================================
-
+# -------------------- MOOD MATCH --------------------
 with tab_mood:
-    st.markdown(
-        '<div class="section-kicker">MAMALALA PERSONALITY BAR</div>',
-        unsafe_allow_html=True,
-    )
-    st.header("Mood Match — tìm món hợp tâm trạng")
-
-    st.write(
-        "Trả lời vài câu hỏi để tìm chiếc ly phù hợp "
-        "với mood hôm nay của bạn."
-    )
-
-    mood = st.radio(
-        "1. Bạn đang cần điều gì?",
-        [
-            "🌿 Tươi mới, tỉnh táo",
-            "☁️ Bình yên, thư giãn",
-            "💗 Một chút ngọt ngào",
-            "📚 Tập trung học tập",
-        ],
-    )
-
-    taste = st.radio(
-        "2. Bạn thích vị nào?",
-        ["Thanh nhẹ", "Ngọt béo", "Trà đậm"],
-        horizontal=True,
-    )
-
-    vibe = st.radio(
-        "3. Chọn vibe hôm nay",
-        ["Nhẹ nhàng", "Năng động", "Tự thưởng"],
-        horizontal=True,
-    )
-
-    mood_key = {
-        "🌿 Tươi mới, tỉnh táo": "fresh",
-        "☁️ Bình yên, thư giãn": "calm",
-        "💗 Một chút ngọt ngào": "sweet",
-        "📚 Tập trung học tập": "focus",
-    }[mood]
-
-    if st.button(
-        "✨ TÌM CHIẾC LY DÀNH CHO MÌNH",
-        type="primary",
-    ):
-        candidates = [
-            p for p in all_products()
-            if mood_key in p["mood"]
-        ]
-
-        if taste == "Thanh nhẹ":
-            filtered = [
-                p for p in candidates
-                if any(word in p["name"].lower()
-                       for word in ["trà xanh", "genmaicha", "dưa lưới", "matcha"])
-            ]
-            if filtered:
-                candidates = filtered
-
-        elif taste == "Ngọt béo":
-            filtered = [
-                p for p in candidates
-                if any(word in p["name"].lower()
-                       for word in ["sữa", "latte", "trà sữa"])
-            ]
-            if filtered:
-                candidates = filtered
-
-        picked = random.choice(candidates or all_products())
-        st.session_state.mood_pick = picked["name"]
-
-    if st.session_state.mood_pick:
-        picked = find_product(st.session_state.mood_pick)
-
-        if picked:
-            st.image(picked["image"], width=320)
-            st.success(
-                f"MAMALALA gợi ý: **{picked['name']}**"
-            )
-            st.write(picked["desc"])
-            st.write(f"**{money(picked['price'])}** · Vibe: {vibe}")
-
-            if st.button(
-                "🧋 Thêm món gợi ý vào giỏ",
-                type="primary",
-                key="mood_add",
-            ):
-                add_to_cart(
-                    picked, "M", "70%", "70%", [],
-                    1, "Gợi ý từ Mood Match",
-                )
-                st.toast("Đã thêm vào giỏ!", icon="💗")
-                st.rerun()
-
-    st.markdown("---")
-    st.subheader("🔮 Một lời nhắn cho hôm nay")
-
-    if st.button("Rút một lời nhắn"):
-        st.session_state.fortune = random.choice(FORTUNES)
-
-    if st.session_state.fortune:
-        st.info(st.session_state.fortune)
-
-
-# =========================================================
-# TAB 3: GIỎ HÀNG & THANH TOÁN
-# =========================================================
-
-with tab_cart:
-    st.header("Giỏ hàng của bạn")
-
-    if not st.session_state.cart:
-        st.info(
-            "Giỏ hàng đang trống. "
-            "Hãy ghé Cửa hàng để chọn món nhé! 🧋"
-        )
-    else:
-        for index, item in enumerate(st.session_state.cart):
+    st.markdown('<div class="section-title">Hôm nay bạn đang cảm thấy thế nào?</div>', unsafe_allow_html=True)
+    st.write("MAMALALA gợi ý một món hợp mood của bạn 💕")
+    mood = st.radio("Chọn mood", ["Cần tỉnh táo ⚡","Muốn thư giãn 🌿","Tâm trạng ngọt ngào 🍓","Muốn tươi mát 🍊"], horizontal=True)
+    mood_map = {
+        "Cần tỉnh táo ⚡":["Cà phê sữa MAMALALA","Americano cam"],
+        "Muốn thư giãn 🌿":["Trà gạo rang","Matcha latte"],
+        "Tâm trạng ngọt ngào 🍓":["Trà sữa trân châu đường đen","Trà sữa ô long kem cheese"],
+        "Muốn tươi mát 🍊":["Trà đào cam sả","Trà dưa lưới nhiệt đới"],
+    }
+    suggested = [p for p in MENU if p["name"] in mood_map[mood]]
+    cols = st.columns(2)
+    for col, product in zip(cols, suggested):
+        with col:
             with st.container(border=True):
-                c1, c2, c3 = st.columns([3, 2, 1])
-
-                c1.markdown(f"**{item['name']}**")
-                c1.caption(
-                    f"Size {item['size']} · Đường {item['sugar']} "
-                    f"· Đá {item['ice']}"
-                )
-                c1.caption(
-                    "Topping: "
-                    + (", ".join(item["toppings"]) or "Không")
-                    + f" · Ghi chú: {item['note']}"
-                )
-
-                new_qty = c2.number_input(
-                    "Số lượng",
-                    min_value=1,
-                    max_value=20,
-                    value=item["qty"],
-                    key=f"cart_quantity_{index}",
-                )
-
-                if new_qty != item["qty"]:
-                    st.session_state.cart[index]["qty"] = new_qty
-
-                c2.write(f"Đơn giá: {money(item['unit_price'])}")
-                c3.markdown(
-                    f"**{money(item['unit_price'] * new_qty)}**"
-                )
-
-                if c3.button("🗑️ Xóa", key=f"remove_{index}"):
-                    st.session_state.cart.pop(index)
+                render_product_image(product)
+                st.markdown(f"### {product['emoji']} {product['name']}")
+                st.markdown(f'<span class="price">{money(product["price"])}</span>', unsafe_allow_html=True)
+                st.write(product["desc"])
+                if st.button("Chọn món này", key=f"mood_{product['id']}", use_container_width=True):
+                    add_to_cart(product, "M", [], "50%", "Ít đá", "")
+                    st.success("Đã thêm size M vào giỏ.")
                     st.rerun()
+    st.divider()
+    st.markdown("### 🔮 Một lời nhắn nhỏ")
+    fortunes = [
+        "Bạn không cần hoàn hảo, chỉ cần tiến bộ từng chút một.",
+        "Một khởi đầu nhỏ vẫn có thể tạo nên điều tuyệt vời.",
+        "Hãy cho bản thân một khoảng nghỉ xứng đáng hôm nay.",
+        "Điều tốt đẹp đôi khi bắt đầu từ một lựa chọn rất nhỏ."
+    ]
+    if st.button("Rút một lời nhắn"):
+        st.info(random.choice(fortunes))
 
+# -------------------- CART / CHECKOUT --------------------
+with tab_cart:
+    st.markdown('<div class="section-title">Giỏ hàng của bạn</div>', unsafe_allow_html=True)
+    if not st.session_state.cart:
+        st.info("Giỏ hàng đang trống. Ghé Menu để chọn món bạn thích nhé 🧋")
+    else:
+        remove_keys = []
+        for item in st.session_state.cart:
+            with st.container(border=True):
+                c1, c2, c3 = st.columns([3,1,1])
+                with c1:
+                    st.markdown(f"**{item['name']} — size {item['size']}**")
+                    topping_text = ", ".join(item["toppings"]) if item["toppings"] else "Không topping"
+                    st.caption(f"{topping_text} • {item['sugar']} đường • {item['ice']}")
+                    if item["note"]:
+                        st.caption(f"Ghi chú: {item['note']}")
+                    st.write(f"Đơn giá: {money(item['unit_price'])}")
+                with c2:
+                    item["qty"] = st.number_input("SL", min_value=1, max_value=20, value=int(item["qty"]), key=f"qty_{item['key']}")
+                with c3:
+                    st.write("")
+                    st.write("")
+                    if st.button("🗑️ Xoá", key=f"remove_{item['key']}"):
+                        remove_keys.append(item["key"])
+                st.markdown(f"**Thành tiền: {money(item['unit_price'] * item['qty'])}**")
+        if remove_keys:
+            st.session_state.cart = [i for i in st.session_state.cart if i["key"] not in remove_keys]
+            st.rerun()
+
+        total, discount = cart_total()
         subtotal = cart_subtotal()
-        discount = current_discount()
-        discount_amount = int(subtotal * discount / 100)
-        final_total = subtotal - discount_amount
+        a, b, c = st.columns(3)
+        a.metric("Tạm tính", money(subtotal))
+        b.metric("Giảm giá", f"-{money(discount)}")
+        c.metric("Tổng thanh toán", money(total))
+        if st.session_state.active_voucher:
+            st.caption(f"Voucher áp dụng: {st.session_state.active_voucher} ({VOUCHERS[st.session_state.active_voucher]}%)")
 
-        st.markdown("---")
-        col1, col2, col3 = st.columns(3)
-        col1.metric("Tạm tính", money(subtotal))
-        col2.metric(
-            f"Giảm giá ({discount}%)",
-            "-" + money(discount_amount),
-        )
-        col3.metric("THANH TOÁN", money(final_total))
-
-        st.markdown("---")
-        st.subheader("Thông tin đặt hàng")
-
+        st.markdown("### 🧾 Thông tin nhận hàng")
         with st.form("checkout_form"):
-            customer_name = st.text_input("Tên khách hàng *")
-            phone = st.text_input("Số điện thoại *")
-
-            order_type = st.radio(
-                "Hình thức nhận",
-                ["Tại quán", "Mang đi", "Giao hàng"],
-                horizontal=True,
-            )
-
-            address = st.text_input(
-                "Số bàn / địa chỉ nhận",
-                placeholder="Bắt buộc nếu chọn giao hàng",
-            )
-
-            payment_method = st.radio(
-                "Phương thức thanh toán",
-                ["Chuyển khoản QR (demo)", "Tiền mặt khi nhận"],
-                horizontal=False,
-            )
-
-            submit_order = st.form_submit_button(
-                "💗 XÁC NHẬN ĐẶT HÀNG",
-                type="primary",
-                use_container_width=True,
-            )
-
-        if submit_order:
+            customer_name = st.text_input("Họ và tên", placeholder="Tên người nhận")
+            phone = st.text_input("Số điện thoại", placeholder="09xxxxxxxx")
+            method = st.radio("Hình thức nhận", ["Đến lấy tại cửa hàng","Giao hàng"], horizontal=True)
+            address = st.text_input("Địa chỉ giao hàng", placeholder="Nhập địa chỉ (nếu chọn giao hàng)")
+            payment = st.radio("Thanh toán", ["Tiền mặt khi nhận","Chuyển khoản (demo VietQR)"], horizontal=True)
+            submitted = st.form_submit_button("🌸 Xác nhận đặt hàng", type="primary", use_container_width=True)
+        if submitted:
             if not customer_name.strip() or not phone.strip():
-                st.error("Vui lòng nhập tên và số điện thoại.")
-            elif not phone.strip().replace(" ", "").isdigit():
-                st.error("Số điện thoại chỉ nên chứa chữ số.")
-            elif order_type == "Giao hàng" and not address.strip():
-                st.error("Vui lòng nhập địa chỉ giao hàng.")
+                st.error("Bạn vui lòng nhập họ tên và số điện thoại.")
+            elif method == "Giao hàng" and not address.strip():
+                st.error("Bạn vui lòng nhập địa chỉ giao hàng.")
             else:
-                order_id = "MAMA-" + uuid.uuid4().hex[:8].upper()
-
+                order_id = "MAMA" + datetime.now().strftime("%y%m%d") + str(random.randint(100,999))
                 order = {
-                    "order_id": order_id,
-                    "customer": customer_name.strip(),
-                    "phone": phone.strip(),
-                    "type": order_type,
-                    "address": address.strip() or "-",
-                    "items": [dict(item) for item in st.session_state.cart],
-                    "subtotal": subtotal,
-                    "discount_percent": discount,
-                    "discount_amount": discount_amount,
-                    "total": final_total,
-                    "payment": payment_method,
-                    "payment_status": (
-                        "Chưa xác nhận"
-                        if "QR" in payment_method
-                        else "Thanh toán khi nhận"
-                    ),
-                    "created": datetime.now().strftime("%d/%m/%Y %H:%M"),
-                    "status": "Đã tiếp nhận",
+                    "order_id": order_id, "created_at": datetime.now().strftime("%d/%m/%Y %H:%M"),
+                    "name": customer_name.strip(), "phone": phone.strip(), "method": method,
+                    "address": address.strip() if method == "Giao hàng" else "Nhận tại cửa hàng",
+                    "payment": payment, "items": [dict(i) for i in st.session_state.cart],
+                    "subtotal": subtotal, "discount": discount, "total": total,
+                    "voucher": st.session_state.active_voucher, "status": "Đã tiếp nhận",
                 }
-
-                st.session_state.orders.append(order)
+                st.session_state.orders.insert(0, order)
+                st.session_state.points += total // 1000
+                st.session_state.passport.extend([i["name"] for i in st.session_state.cart])
                 st.session_state.last_order_id = order_id
                 st.session_state.cart = []
-
-                # Cộng điểm demo khi đơn được tạo.
-                # Bản thật nên cộng sau khi đơn hoàn tất.
-                st.session_state.member_points += final_total // 10000
-
-                st.session_state.spin_discount = 0
-                st.session_state.promo_discount = 0
                 st.session_state.active_voucher = ""
-
-                st.success(
-                    f"Đặt hàng thành công! Mã đơn: **{order_id}**"
-                )
-                st.balloons()
+                st.success(f"Đặt hàng thành công! Mã đơn của bạn: **{order_id}**")
                 st.rerun()
 
-    # Hiển thị QR cho đơn gần nhất
-    last_id = st.session_state.last_order_id
-    last_order = find_order(last_id) if last_id else None
-
-    if last_order:
-        st.markdown("---")
-        st.subheader("🧾 Đơn hàng gần nhất")
-        st.write(f"Mã đơn: **{last_order['order_id']}**")
-        st.write(f"Tổng tiền: **{money(last_order['total'])}**")
-        st.write(f"Trạng thái: **{last_order['status']}**")
-
-        if "QR" in last_order["payment"]:
-            st.warning(
-                "QR dưới đây là bản minh họa. "
-                "Chưa có xác nhận thanh toán tự động."
-            )
-
-            # THAY THÔNG TIN MẪU TRƯỚC KHI DÙNG THẬT
+    # Always show the last order's payment details after rerun.
+    last = next((o for o in st.session_state.orders if o["order_id"] == st.session_state.last_order_id), None)
+    if last:
+        st.divider()
+        st.markdown("### ✅ Đơn hàng gần nhất")
+        st.write(f"Mã đơn: **{last['order_id']}** • Trạng thái: **{last['status']}**")
+        st.write(f"Tổng tiền: **{money(last['total'])}**")
+        if "Chuyển khoản" in last["payment"]:
+            st.warning("Đây là QR demo. Hãy thay thông tin tài khoản bên dưới bằng tài khoản cửa hàng thật trước khi sử dụng.")
+            # Placeholder values only. Do not treat this as a real payment link.
             bank_id = "MB"
-            account_no = "0987654321"
-            account_name = "QUAN TRA SUA MAMALALA"
-
-            transfer_info = f"THANH TOAN {last_order['order_id']}"
-
+            account_no = "0123456789"
+            account_name = "MAMALALA DEMO"
             qr_url = (
-                f"https://img.vietqr.io/image/"
-                f"{bank_id}-{account_no}-compact2.png"
-                f"?amount={last_order['total']}"
-                f"&addInfo={urllib.parse.quote(transfer_info)}"
-                f"&accountName={urllib.parse.quote(account_name)}"
+                "https://img.vietqr.io/image/"
+                f"{bank_id}-{account_no}-compact2.png?amount={last['total']}"
+                f"&addInfo={quote('Thanh toan ' + last['order_id'])}"
+                f"&accountName={quote(account_name)}"
             )
+            st.image(qr_url, caption="VietQR demo — chưa xác nhận thanh toán tự động", width=260)
+        st.caption("Lưu ý: bản demo lưu đơn trong phiên chạy Streamlit; khi khởi động lại, dữ liệu có thể mất.")
 
-            st.image(
-                qr_url,
-                width=260,
-                caption="QR minh họa — chưa xác nhận đã nhận tiền",
-            )
-            st.caption(f"Nội dung chuyển khoản: {transfer_info}")
-
-
-# =========================================================
-# TAB 4: THEO DÕI ĐƠN HÀNG
-# =========================================================
-
-with tab_tracking:
-    st.header("📦 Theo dõi đơn hàng")
-
-    lookup_id = st.text_input(
-        "Nhập mã đơn hàng",
-        placeholder="Ví dụ: MAMA-AB12CD34",
-    ).strip().upper()
-
-    if lookup_id:
-        order = find_order(lookup_id)
-
-        if order:
-            st.markdown(f"### Đơn {order['order_id']}")
-            st.caption(
-                f"Thời gian: {order['created']} · "
-                f"Hình thức: {order['type']}"
-            )
-
-            st.write(f"Khách hàng: {order['customer']}")
-            st.write(f"Tổng tiền: **{money(order['total'])}**")
-            st.write(f"Thanh toán: {order['payment_status']}")
-
-            status = order["status"]
-
-            if status == "Đã hủy":
-                st.error("Đơn hàng đã bị hủy.")
-            else:
-                st.success(f"Trạng thái hiện tại: **{status}**")
-
-                progress_map = {
-                    "Đã tiếp nhận": 0.15,
-                    "Đang pha chế": 0.40,
-                    "Sẵn sàng nhận": 0.70,
-                    "Đang giao": 0.85,
-                    "Hoàn tất": 1.0,
-                }
-
-                st.progress(progress_map.get(status, 0.0))
-
-                for step in [
-                    "Đã tiếp nhận",
-                    "Đang pha chế",
-                    "Sẵn sàng nhận",
-                    "Đang giao",
-                    "Hoàn tất",
-                ]:
-                    marker = "✅" if (
-                        step == status or
-                        (
-                            status in ORDER_STATUSES
-                            and status != "Đã hủy"
-                            and ORDER_STATUSES.index(step)
-                            < ORDER_STATUSES.index(status)
-                        )
-                    ) else "○"
-
-                    st.write(f"{marker} {step}")
-
-            with st.expander("Xem chi tiết món"):
-                for item in order["items"]:
-                    st.write(
-                        f"- {item['name']} · Size {item['size']} "
-                        f"· x{item['qty']} · "
-                        f"{money(item['unit_price'] * item['qty'])}"
-                    )
-        else:
-            st.error(
-                "Không tìm thấy đơn. "
-                "Bản demo chỉ tìm được đơn trong phiên hiện tại."
-            )
-
-
-# =========================================================
-# TAB 5: SWEET CLUB
-# =========================================================
-
-with tab_club:
-    st.markdown(
-        '<div class="section-kicker">GOOD SIPS, LOVELY PERKS</div>',
-        unsafe_allow_html=True,
-    )
-    st.header("Sweet Club 🎀")
-
-    member_col1, member_col2 = st.columns([1, 2])
-
-    with member_col1:
-        st.markdown("""
-        <div class="hero">
-            <div class="hero-kicker">YOUR MEMBER CARD</div>
-            <div class="hero-title" style="font-size:2rem;">
-                Sweetie ♡
-            </div>
-            <p class="hero-copy">
-                Every sip brings you closer to a little treat.
-            </p>
-        </div>
-        """, unsafe_allow_html=True)
-
-        st.metric(
-            "Điểm hiện có",
-            f"{st.session_state.member_points} điểm",
-        )
-
-        if st.session_state.member_points >= 100:
-            st.success("🏆 Bạn đã đạt mốc quà tặng 100 điểm!")
-
-    with member_col2:
-        st.subheader("🎁 Đổi điểm lấy quà")
-        st.write("30 điểm — miễn phí 1 topping")
-        st.write("60 điểm — voucher 15%")
-        st.write("100 điểm — một ly size S")
-
-        if st.session_state.member_points >= 30:
-            if st.button("🎁 Đổi 30 điểm lấy topping"):
-                st.session_state.member_points -= 30
-                st.success("Đổi quà demo thành công!")
-                st.rerun()
-        else:
-            st.info(
-                f"Cần thêm {30 - st.session_state.member_points} "
-                "điểm để đổi topping."
-            )
-
-        st.markdown("---")
-        st.subheader("📖 Drink Passport")
-        st.write(
-            "Thử nhiều dòng đồ uống để trở thành "
-            "Fruit Explorer, Tea Lover hoặc Signature Fan."
-        )
-
-        tried = st.multiselect(
-            "Chọn các dòng đồ uống bạn đã khám phá",
-            [
-                "Trà sữa",
-                "Trà trái cây",
-                "Matcha",
-                "Cacao",
-            ],
-            key="drink_passport",
-        )
-
-        st.progress(len(tried) / 4)
-        st.caption(f"Đã khám phá {len(tried)}/4 dòng đồ uống.")
-
-        if len(tried) == 4:
-            st.success("🏅 Huy hiệu demo: MAMALALA Explorer!")
-
-        st.caption(
-            "Điểm và bộ sưu tập hiện chỉ lưu trong phiên demo."
-        )
-
-
-# =========================================================
-# TAB 6: ĐÁNH GIÁ
-# =========================================================
-
-with tab_reviews:
-    st.header("⭐ Khách hàng nói gì?")
-
-    reviews = st.session_state.reviews
-
-    if reviews:
-        avg_rating = sum(r["rating"] for r in reviews) / len(reviews)
-        st.metric("Điểm đánh giá trung bình", f"{avg_rating:.1f}/5")
-
-    for review in reviews:
-        with st.container(border=True):
-            st.markdown(
-                f"**{html.escape(review['name'])}** "
-                f"· {'⭐' * review['rating']} "
-                f"· {review['date']}"
-            )
-            st.write(review["comment"])
-
-    st.markdown("---")
-    st.subheader("💌 Gửi đánh giá của bạn")
-
-    with st.form("review_form"):
-        review_name = st.text_input("Tên của bạn")
-        rating = st.slider("Số sao", 1, 5, 5)
-        comment = st.text_area(
-            "Cảm nhận",
-            placeholder="Kể MAMALALA nghe nhé...",
-        )
-
-        submit_review = st.form_submit_button("Gửi đánh giá")
-
-    if submit_review:
-        if review_name.strip() and comment.strip():
-            st.session_state.reviews.insert(
-                0,
-                {
-                    "name": review_name.strip(),
-                    "rating": rating,
-                    "comment": comment.strip(),
-                    "date": datetime.now().strftime("%d/%m/%Y"),
-                },
-            )
-
-            st.success("Cảm ơn bạn đã gửi đánh giá!")
-            st.rerun()
-        else:
-            st.error("Vui lòng nhập tên và cảm nhận.")
-
-
-# =========================================================
-# TAB 7: ADMIN DASHBOARD
-# =========================================================
-
-with tab_admin:
-    st.header("📊 MAMALALA Admin Dashboard")
-
-    if not st.session_state.admin_logged_in:
-        st.info(
-            "Đăng nhập để xem dashboard quản trị demo."
-        )
-
-        with st.form("admin_login"):
-            password = st.text_input(
-                "Mật khẩu demo",
-                type="password",
-            )
-            login = st.form_submit_button("Đăng nhập")
-
-        if login:
-            # MẬT KHẨU DEMO, KHÔNG DÙNG CHO WEBSITE THẬT
-            if password == "mama2026":
-                st.session_state.admin_logged_in = True
-                st.session_state.admin_attempts = 0
-                st.rerun()
-            else:
-                st.session_state.admin_attempts += 1
-                st.error("Mật khẩu chưa đúng.")
-
+# -------------------- ORDER TRACKING --------------------
+with tab_track:
+    st.markdown('<div class="section-title">Theo dõi đơn hàng</div>', unsafe_allow_html=True)
+    if not st.session_state.orders:
+        st.info("Bạn chưa có đơn hàng nào trong phiên này.")
     else:
-        if st.button("Đăng xuất Admin"):
-            st.session_state.admin_logged_in = False
-            st.rerun()
-
-        orders = st.session_state.orders
-
-        revenue = sum(
-            o["total"] for o in orders
-            if o["status"] != "Đã hủy"
-        )
-
-        order_count = len([
-            o for o in orders if o["status"] != "Đã hủy"
-        ])
-
-        average_order = revenue / order_count if order_count else 0
-
+        order_ids = [o["order_id"] for o in st.session_state.orders]
+        selected_id = st.selectbox("Chọn mã đơn", order_ids, index=0)
+        order = next(o for o in st.session_state.orders if o["order_id"] == selected_id)
+        st.markdown(f"### Đơn **{order['order_id']}**")
         c1, c2, c3 = st.columns(3)
-        c1.metric("💰 Doanh thu đơn hợp lệ", money(revenue))
-        c2.metric("📦 Số đơn chưa hủy", order_count)
-        c3.metric("🧾 Giá trị đơn trung bình", money(average_order))
+        c1.metric("Tổng tiền", money(order["total"]))
+        c2.metric("Hình thức", order["method"])
+        c3.metric("Trạng thái", order["status"])
+        st.caption(f"Người nhận: {order['name']} • {order['phone']} • Tạo lúc {order['created_at']}")
+        st.write("**Sản phẩm**")
+        for item in order["items"]:
+            st.write(f"- {item['name']} (size {item['size']}) × {item['qty']} — {money(item['unit_price']*item['qty'])}")
+        if order["status"] == "Đã hủy":
+            st.error("Đơn hàng đã bị hủy.")
+        else:
+            progress_steps = STATUSES[:5]
+            current_index = progress_steps.index(order["status"]) if order["status"] in progress_steps else 0
+            st.progress((current_index + 1) / len(progress_steps))
+            st.caption(" → ".join(progress_steps))
 
-        st.markdown("---")
-        st.subheader("Quản lý đơn hàng")
+# -------------------- SWEET CLUB --------------------
+with tab_club:
+    st.markdown('<div class="section-title">Sweet Club — tích điểm đổi niềm vui</div>', unsafe_allow_html=True)
+    st.write("Mỗi 1.000đ chi tiêu được cộng 1 điểm trong bản demo.")
+    st.metric("Điểm hiện có", f"{st.session_state.points} điểm")
+    st.markdown("### 📔 Drink Passport")
+    if st.session_state.passport:
+        counts = pd.Series(st.session_state.passport).value_counts()
+        for drink, count in counts.items():
+            st.write(f"- {drink}: **{count} lần**")
+    else:
+        st.info("Đặt món đầu tiên để bắt đầu bộ sưu tập thức uống của bạn.")
+    st.caption("Điểm và passport hiện lưu trong session của ứng dụng, chưa gắn với tài khoản khách hàng.")
 
-        if orders:
-            df = pd.DataFrame([
-                {
-                    "Mã đơn": o["order_id"],
-                    "Khách hàng": o["customer"],
-                    "SĐT": o["phone"],
-                    "Hình thức": o["type"],
-                    "Tổng tiền": o["total"],
-                    "Thời gian": o["created"],
-                    "Trạng thái": o["status"],
-                    "Thanh toán": o["payment_status"],
-                }
-                for o in orders
-            ])
+# -------------------- REVIEWS --------------------
+with tab_reviews:
+    st.markdown('<div class="section-title">Khách hàng nói gì?</div>', unsafe_allow_html=True)
+    with st.form("review_form"):
+        reviewer = st.text_input("Tên hiển thị", placeholder="Bạn có thể dùng biệt danh")
+        rating = st.select_slider("Bạn chấm mấy sao?", options=[1,2,3,4,5], value=5)
+        review_text = st.text_area("Chia sẻ trải nghiệm", placeholder="Món uống, dịch vụ hoặc góp ý của bạn...")
+        review_submit = st.form_submit_button("Gửi đánh giá", use_container_width=True)
+    if review_submit:
+        if not review_text.strip():
+            st.error("Bạn hãy viết vài dòng đánh giá trước khi gửi.")
+        else:
+            st.session_state.reviews.insert(0, {
+                "name": reviewer.strip() or "Khách MAMALALA",
+                "rating": rating, "text": review_text.strip(),
+                "created_at": datetime.now().strftime("%d/%m/%Y %H:%M")
+            })
+            st.success("Cảm ơn bạn đã góp ý cho MAMALALA!")
+            st.rerun()
+    st.divider()
+    if not st.session_state.reviews:
+        st.info("Chưa có đánh giá nào. Hãy là người đầu tiên nhé!")
+    for review in st.session_state.reviews:
+        with st.container(border=True):
+            st.markdown(f"**{review['name']}**  ·  {'⭐' * review['rating']}")
+            st.write(review["text"])
+            st.caption(review["created_at"])
 
-            st.dataframe(
-                df,
-                use_container_width=True,
-                hide_index=True,
-            )
-
-            st.subheader("🔄 Cập nhật trạng thái")
-
-            selected_id = st.selectbox(
-                "Chọn mã đơn",
-                [o["order_id"] for o in orders],
-            )
-
-            selected_order = find_order(selected_id)
-
-            new_status = st.selectbox(
-                "Trạng thái mới",
-                ORDER_STATUSES,
-                index=ORDER_STATUSES.index(selected_order["status"]),
-            )
-
-            if st.button("Lưu trạng thái đơn"):
-                selected_order["status"] = new_status
-                st.success("Đã cập nhật trạng thái đơn.")
+# -------------------- ADMIN --------------------
+with tab_admin:
+    st.markdown('<div class="section-title">Khu vực quản trị</div>', unsafe_allow_html=True)
+    if not st.session_state.admin_logged_in:
+        st.info("Đăng nhập để xem đơn hàng và số liệu demo.")
+        with st.form("admin_login_form"):
+            password = st.text_input("Mật khẩu quản trị", type="password")
+            login = st.form_submit_button("Đăng nhập", type="primary")
+        if login:
+            # Demo password only. Use Streamlit secrets/environment variables in production.
+            if password == st.secrets.get("ADMIN_PASSWORD", "mama2026"):
+                st.session_state.admin_logged_in = True
                 st.rerun()
-
-            st.markdown("---")
-            st.subheader("📈 Doanh thu theo đơn")
-
-            chart_data = pd.DataFrame([
-                {
-                    "Mã đơn": o["order_id"],
-                    "Doanh thu": o["total"],
-                }
-                for o in orders
-                if o["status"] != "Đã hủy"
-            ])
-
-            if not chart_data.empty:
-                st.bar_chart(
-                    chart_data.set_index("Mã đơn")
-                )
-
-            st.subheader("🏆 Món được đặt nhiều")
-
-            item_counter = Counter()
-
+            else:
+                st.error("Mật khẩu chưa đúng.")
+    else:
+        top1, top2 = st.columns([3,1])
+        with top1:
+            st.success("Đã đăng nhập quản trị (demo).")
+        with top2:
+            if st.button("Đăng xuất"):
+                st.session_state.admin_logged_in = False
+                st.rerun()
+        orders = st.session_state.orders
+        revenue = sum(o["total"] for o in orders if o["status"] != "Đã hủy")
+        completed = sum(1 for o in orders if o["status"] == "Hoàn tất")
+        m1, m2, m3, m4 = st.columns(4)
+        m1.metric("Tổng đơn", len(orders))
+        m2.metric("Doanh thu demo", money(revenue))
+        m3.metric("Đơn hoàn tất", completed)
+        m4.metric("Đánh giá", len(st.session_state.reviews))
+        if orders:
+            st.markdown("### 📦 Quản lý đơn hàng")
+            for order in orders:
+                with st.container(border=True):
+                    c1, c2 = st.columns([3,2])
+                    with c1:
+                        st.markdown(f"**{order['order_id']} — {order['name']}**")
+                        st.caption(f"{order['created_at']} • {order['phone']} • {order['method']}")
+                        st.write(f"{money(order['total'])} • {len(order['items'])} dòng sản phẩm")
+                    with c2:
+                        current = order["status"]
+                        new_status = st.selectbox(
+                            "Trạng thái", STATUSES,
+                            index=STATUSES.index(current),
+                            key=f"status_{order['order_id']}"
+                        )
+                        if st.button("Lưu trạng thái", key=f"save_{order['order_id']}", use_container_width=True):
+                            order["status"] = new_status
+                            st.success("Đã cập nhật trạng thái.")
+                            st.rerun()
+            export_rows = []
+            for order in orders:
+                export_rows.append({
+                    "Mã đơn": order["order_id"], "Ngày tạo": order["created_at"],
+                    "Khách hàng": order["name"], "SĐT": order["phone"],
+                    "Hình thức": order["method"], "Thanh toán": order["payment"],
+                    "Trạng thái": order["status"], "Tạm tính": order["subtotal"],
+                    "Giảm giá": order["discount"], "Tổng tiền": order["total"],
+                })
+            csv = pd.DataFrame(export_rows).to_csv(index=False).encode("utf-8-sig")
+            st.download_button("⬇️ Xuất danh sách đơn hàng (CSV)", csv, "mamalala_orders.csv", "text/csv")
+            all_items = []
             for order in orders:
                 if order["status"] != "Đã hủy":
                     for item in order["items"]:
-                        item_counter[item["name"]] += item["qty"]
-
-            if item_counter:
-                top_products = pd.DataFrame(
-                    item_counter.most_common(),
-                    columns=["Tên món", "Số lượng đã đặt"],
-                )
-                st.dataframe(
-                    top_products,
-                    use_container_width=True,
-                    hide_index=True,
-                )
-
-            csv_data = df.to_csv(
-                index=False
-            ).encode("utf-8-sig")
-
-            st.download_button(
-                "⬇️ Tải báo cáo đơn hàng CSV",
-                data=csv_data,
-                file_name="mamalala_orders.csv",
-                mime="text/csv",
-            )
-
+                        all_items.extend([item["name"]] * item["qty"])
+            if all_items:
+                st.markdown("### 🏆 Món được gọi nhiều")
+                counts = pd.Series(all_items).value_counts().head(5)
+                st.bar_chart(counts)
         else:
-            st.info(
-                "Chưa có đơn hàng. Hãy thử đặt một món "
-                "để xem dashboard hoạt động."
-            )
+            st.info("Chưa có đơn hàng nào trong phiên chạy này.")
 
-        st.markdown("---")
-        st.subheader("📦 Tổng quan menu")
-
-        menu_df = pd.DataFrame([
-            {
-                "Tên món": p["name"],
-                "Giá": p["price"],
-                "Danh mục": category,
-            }
-            for category, products in MENU.items()
-            for p in products
-        ])
-
-        st.dataframe(
-            menu_df,
-            use_container_width=True,
-            hide_index=True,
-        )
-
-        st.caption(
-            "Dashboard tính từ dữ liệu trong phiên hiện tại, "
-            "không phải báo cáo doanh thu thực tế."
-        )
-
-
-# -------------------- FOOTER --------------------
-
-st.markdown("---")
-st.markdown("""
-<div style="text-align:center;color:#9a858d;font-size:.85rem;">
-    MAMALALA TEA & COFFEE STUDIO<br>
-    Sip your mood, share your joy ♡
-</div>
-""", unsafe_allow_html=True)
+st.markdown('<div class="footer">🧋 MAMALALA · Tea • Coffee • Little Joy<br>Made with a little sweetness and a lot of love.</div>', unsafe_allow_html=True)
