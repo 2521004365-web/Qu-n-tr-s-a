@@ -129,14 +129,20 @@ button[data-baseweb="tab"][aria-selected="true"] {
   border-bottom-color: #c66c8c !important;
 }
 .hero {
-  padding: 34px 32px;
-  border-radius: 26px;
-  background: linear-gradient(120deg, #ffe1eb 0%, #fff4e9 58%, #f9d9e4 100%);
-  border: 1px solid #f0ccd8;
+  position: relative; overflow: hidden;
+  padding: clamp(28px, 5vw, 58px) clamp(22px, 5vw, 54px);
+  border-radius: 30px;
+  background: radial-gradient(circle at 88% 18%, rgba(255,255,255,.88) 0 8%, transparent 8.5%),
+              radial-gradient(circle at 94% 78%, rgba(255,255,255,.45) 0 13%, transparent 13.5%),
+              linear-gradient(120deg, #ffd8e6 0%, #fff0e7 52%, #f4c7d8 100%);
+  border: 1px solid #efbfd0;
+  box-shadow: 0 14px 38px rgba(145, 69, 99, .10);
   margin-bottom: 22px;
 }
-.hero h1 { color: #332832 !important; font-size: clamp(2rem, 4vw, 3.4rem); margin: 0; }
-.hero p { color: #5f4b56 !important; margin: 8px 0 0 0; }
+.hero h1 { color: #2e2430 !important; font-size: clamp(3rem, 8vw, 6.4rem); line-height: .98; letter-spacing: -3px; font-weight: 800; margin: 4px 0 0 0; }
+.hero .studio { color: #a23e65; font-size: clamp(1rem, 2vw, 1.45rem); font-weight: 800; letter-spacing: .32em; margin-top: 12px; }
+.hero p { color: #594550 !important; font-size: clamp(.95rem, 1.7vw, 1.12rem); margin: 13px 0 0 0; max-width: 650px; }
+.hero .hero-note { color: #8b4964; font-size: .78rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; margin-top: 22px; }
 .eyebrow {
   display: inline-block; background: #fff; color: #9b3f61;
   border: 1px solid #f0c6d5; padding: 5px 11px; border-radius: 999px;
@@ -170,11 +176,11 @@ hr { border-color: #f0dce3 !important; }
 # -------------------- DATA --------------------
 MENU = [
     {"id":"ml01","name":"Trà sữa trân châu đường đen","category":"Trà sữa","price":39000,"tag":"Best seller","desc":"Trà sữa béo thơm, trân châu dai và sốt đường đen.","emoji":"🧋","image":"https://images.unsplash.com/photo-1558857563-b371033873b8?auto=format&fit=crop&w=900&q=85"},
-    {"id":"ml02","name":"Trà sữa ô long kem cheese","category":"Trà sữa","price":42000,"tag":"Creamy","desc":"Ô long thơm nhẹ, lớp kem cheese mặn ngọt.","emoji":"🥤","image":"https://images.unsplash.com/photo-1558857563-b371033873b8?auto=format&fit=crop&w=900&q=85"},
+    {"id":"ml02","name":"Trà sữa ô long kem cheese","category":"Trà sữa","price":42000,"tag":"Creamy","desc":"Ô long thơm nhẹ, lớp kem cheese mặn ngọt.","emoji":"🥤","image":"https://i.beauty321.com/600x/https%3A/il.beauty321.com/gallery/gallery/54522/photo-643e6356d2024.jpg"},
     {"id":"ml03","name":"Matcha latte","category":"Trà sữa","price":42000,"tag":"Green mood","desc":"Matcha thơm, vị đắng dịu và sữa mịn.","emoji":"🍵","image":"https://images.unsplash.com/photo-1515823064-d6e0c04616a7?auto=format&fit=crop&w=900&q=85"},
     {"id":"ml04","name":"Trà đào cam sả","category":"Trà trái cây","price":35000,"tag":"Fresh","desc":"Trà thanh mát, đào ngọt dịu, cam và sả thơm.","emoji":"🍑","image":"https://images.unsplash.com/photo-1556679343-c7306c1976bc?auto=format&fit=crop&w=900&q=85"},
     {"id":"ml05","name":"Trà gạo rang","category":"Trà nguyên bản","price":32000,"tag":"Gentle","desc":"Hương gạo rang ấm, hậu vị dịu và dễ uống.","emoji":"🌾","image":"https://images.unsplash.com/photo-1576092768241-dec231879fc3?auto=format&fit=crop&w=900&q=85"},
-    {"id":"ml06","name":"Trà dưa lưới nhiệt đới","category":"Trà trái cây","price":36000,"tag":"Seasonal","desc":"Dưa lưới thơm ngọt kết hợp trà thanh mát.","emoji":"🍈","image":"https://images.unsplash.com/photo-1513558161293-cusb3e7c5d?auto=format&fit=crop&w=900&q=85"},
+    {"id":"ml06","name":"Trà dưa lưới nhiệt đới","category":"Trà trái cây","price":36000,"tag":"Seasonal","desc":"Dưa lưới thơm ngọt kết hợp trà thanh mát.","emoji":"🍈","image":"https://bucket.cooklaif.com/311-honeydew-melon-iced-green-tea-311.jpg"},
     {"id":"ml07","name":"Cà phê sữa MAMALALA","category":"Cà phê","price":29000,"tag":"Wake up","desc":"Cà phê đậm đà, sữa ngọt vừa phải.","emoji":"☕","image":"https://images.unsplash.com/photo-1461023058943-07fcbe16d735?auto=format&fit=crop&w=900&q=85"},
     {"id":"ml08","name":"Americano cam","category":"Cà phê","price":35000,"tag":"Bright","desc":"Cà phê thanh, hương cam tươi mát.","emoji":"🍊","image":"https://images.unsplash.com/photo-1517701604599-bb29b565090c?auto=format&fit=crop&w=900&q=85"},
 ]
@@ -298,9 +304,11 @@ with st.sidebar:
 # -------------------- HERO --------------------
 st.markdown("""
 <div class="hero">
-  <span class="eyebrow">A LITTLE JOY IN EVERY SIP</span>
-  <h1>🧋 MAMALALA</h1>
-  <p>Trà ngon, cà phê thơm và những niềm vui nho nhỏ dành riêng cho bạn.</p>
+  <span class="eyebrow">WELCOME TO OUR LITTLE WORLD</span>
+  <h1>MAMALALA</h1>
+  <div class="studio">DRINK STUDIO</div>
+  <p>Tea, coffee & little joy — một góc nhỏ ngọt ngào để bạn tìm thấy thức uống hợp mood của mình.</p>
+  <div class="hero-note">CRAFTED WITH LOVE · SERVED WITH JOY</div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -458,8 +466,17 @@ with tab_cart:
         st.write(f"Mã đơn: **{last['order_id']}** • Trạng thái: **{last['status']}**")
         st.write(f"Tổng tiền: **{money(last['total'])}**")
         if "Chuyển khoản" in last["payment"]:
-            st.warning("Đây là QR demo. Hãy thay thông tin tài khoản bên dưới bằng tài khoản cửa hàng thật trước khi sử dụng.")
-            # Placeholder values only. Do not treat this as a real payment link.
+            st.markdown("### 💳 Thanh toán bằng VietQR")
+            st.markdown(
+                f'''<div style="background:#fff;border:1px solid #f0dce3;border-radius:18px;padding:16px 18px;margin:8px 0 14px;">
+                  <div style="color:#8f4562;font-weight:800;font-size:.8rem;letter-spacing:.08em;">MAMALALA · PAYMENT</div>
+                  <div style="color:#2e2430;font-size:1.8rem;font-weight:800;margin:4px 0;">{money(last["total"])}</div>
+                  <div style="color:#5f5660;">Nội dung chuyển khoản</div>
+                  <div style="color:#2e2430;font-weight:800;font-size:1.05rem;">Thanh toan {last["order_id"]}</div>
+                </div>''',
+                unsafe_allow_html=True,
+            )
+            # Demo account placeholders only. Replace these with the shop's real bank details before launch.
             bank_id = "MB"
             account_no = "0123456789"
             account_name = "MAMALALA DEMO"
@@ -469,7 +486,19 @@ with tab_cart:
                 f"&addInfo={quote('Thanh toan ' + last['order_id'])}"
                 f"&accountName={quote(account_name)}"
             )
-            st.image(qr_url, caption="VietQR demo — chưa xác nhận thanh toán tự động", width=260)
+            qr_col, detail_col = st.columns([1, 1.35], gap="large")
+            with qr_col:
+                st.image(qr_url, caption="Quét mã QR để chuyển khoản (DEMO)", use_container_width=True)
+            with detail_col:
+                st.markdown("**Thông tin nhận tiền**")
+                st.write("Ngân hàng: MB Bank (demo)")
+                st.write(f"Số tài khoản: `{account_no}`")
+                st.write(f"Tên tài khoản: `{account_name}`")
+                st.write(f"Số tiền: **{money(last['total'])}**")
+                st.write(f"Nội dung: **Thanh toan {last['order_id']}**")
+                st.warning("QR và tài khoản hiện là dữ liệu minh hoạ, chưa nhận tiền thật. Hãy thay bằng tài khoản cửa hàng trước khi sử dụng thực tế.")
+        else:
+            st.info("Bạn đã chọn thanh toán tiền mặt khi nhận hàng. Vui lòng thanh toán tại cửa hàng hoặc khi nhận đồ.")
         st.caption("Lưu ý: bản demo lưu đơn trong phiên chạy Streamlit; khi khởi động lại, dữ liệu có thể mất.")
 
 # -------------------- ORDER TRACKING --------------------
