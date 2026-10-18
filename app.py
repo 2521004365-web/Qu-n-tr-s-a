@@ -535,10 +535,18 @@ with tab_reviews:
     if not st.session_state.reviews:
         st.info("Chưa có đánh giá nào. Hãy là người đầu tiên nhé!")
     for review in st.session_state.reviews:
-        with st.container(border=True):
-            st.markdown(f"**{review['name']}**  ·  {'⭐' * review['rating']}")
-            st.write(review["text"])
-            st.caption(review["created_at"])
+    with st.container(border=True):
+        name = review.get("name", "Khách MAMALALA")
+        rating = review.get("rating", 5)
+        text = review.get(
+            "text",
+            review.get("comment", review.get("content", "Đánh giá chưa có nội dung"))
+        )
+        created_at = review.get("created_at", "Không rõ thời gian")
+
+        st.markdown(f"**{name}** · {'⭐' * int(rating)}")
+        st.write(text)
+        st.caption(created_at)
 
 # -------------------- ADMIN --------------------
 with tab_admin:
